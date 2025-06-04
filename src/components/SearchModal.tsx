@@ -8,7 +8,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Note } from '@/modules/notes/note.entity';
-import { useDebounce, useDebouncedCallback } from 'use-debounce';
+import { useDebouncedCallback } from 'use-debounce';
 
 interface SearchModalProps {
   isOpen: boolean;
