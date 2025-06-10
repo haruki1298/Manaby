@@ -6,7 +6,7 @@ import { Plus, Search } from 'lucide-react';
 import { useCurrentUserStore } from '@/modules/auth/current-user.state';
 import { useNoteStore } from '@/modules/notes/note.state';
 import { noteRepository } from '@/modules/notes/note.repository';
-import { useNavigate } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import { authRepository } from '@/modules/auth/auath.repository';
 
 type Props = {
@@ -47,6 +47,11 @@ const SideBar: FC<Props> = ({ onSearchButtonClicked }) => {
           <div className="mt-4">
             <NoteList />
             <Item label="ノートを作成" icon={Plus} onClick={createNote} />
+          </div>
+          <div className="mt-4 text-center text-sm">
+            <Link className="underline  text-blue-500" to={'/'}>
+              Homeへ戻る
+            </Link>
           </div>
         </div>
       </aside>

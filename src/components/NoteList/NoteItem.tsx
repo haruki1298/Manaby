@@ -58,7 +58,7 @@ export function NoteItem({
         >
           <DropdownMenuItem onClick={onDelete}>
             <Trash className="w-4 h-4 mr-2" />
-            Delete
+            <span className="text-red-500">Delete</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
