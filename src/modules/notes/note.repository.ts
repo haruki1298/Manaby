@@ -63,4 +63,23 @@ export const noteRepository = {
       if(error !== null) throw new Error(error.message);
       return true;
     },
+    async setPublic(id: number, isPublic: boolean) {
+      const { data, error } = await supabase
+        .from('notes')
+        .update({ is_public: isPublic })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error != null) throw new Error(error.message);
+      return data;
+    },
+    async findPublicNotes() {
+      const { data, error } = await supabase
+        .from('notes')
+        .select()
+        .eq('is_public', true)
+        .order('created_at', { ascending: false });
+      if (error != null) throw new Error(error.message);
+      return data;
+    },
 };

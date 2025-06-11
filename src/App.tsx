@@ -7,6 +7,7 @@ import Layout from "./Layout";
 import { useCurrentUserStore } from "./modules/auth/current-user.state";
 import { useEffect, useState } from "react";
 import { authRepository } from "./modules/auth/auath.repository";
+import PublicNote from "./pages/PublicNote";
 
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
           <Route path='/' element={<Layout />}>
             <Route index element={<Home />}/>
             <Route path="/notes/:id" element={<NoteDetail />}/>
+            <Route path="/public/:id" element={<PublicNote />}/>
           </Route>
           <Route path="/signin" element={<Signin />}/>
           <Route path="/signup" element={<Signup />}/>

@@ -17,6 +17,7 @@ export type Database = {
           parent_document: number | null
           title: string | null
           user_id: string
+          is_public: boolean
         }
         Insert: {
           content?: string | null
@@ -25,6 +26,7 @@ export type Database = {
           parent_document?: number | null
           title?: string | null
           user_id: string
+          is_public?: boolean
         }
         Update: {
           content?: string | null
@@ -33,6 +35,7 @@ export type Database = {
           parent_document?: number | null
           title?: string | null
           user_id?: string
+          is_public?: boolean
         }
         Relationships: []
       }
@@ -73,7 +76,7 @@ export type Tables<
   }
     ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {

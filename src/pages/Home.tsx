@@ -3,7 +3,7 @@ import { useCurrentUserStore } from '@/modules/auth/current-user.state';
 import { noteRepository } from '@/modules/notes/note.repository';
 import { useNoteStore } from '@/modules/notes/note.state';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShareModal } from '@/components/ShareModal';
 import { Note } from '@/modules/notes/note.entity'; // Note型が必要な場合
@@ -17,6 +17,15 @@ export function Home() {
   // 追加: 共有モーダル用の状態
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+
+  // 公開ノート用の状態
+  const [publicNotes, setPublicNotes] = useState<Note[]>(
+    [] // 初期値は空の配列
+  );
+
+  useEffect(() => {
+    fetchPublicNotes();
+  }, []);
 
   const createNote = async () => {
     const newNote = await noteRepository.create(currentUser!.id, { title });
@@ -45,6 +54,12 @@ export function Home() {
 
   // ノート一覧取得（例: jotaiストアから）
   const notes = noteStore.getAll();
+
+  // 公開ノート取得
+  const fetchPublicNotes = async () => {
+    const notes = await noteRepository.findPublicNotes();
+    setPublicNotes(notes ?? []);
+  };
 
   return (
     <Card className="border-0 shadow-none w-1/2 m-auto">
@@ -80,6 +95,21 @@ export function Home() {
                 onClick={() => handleShareClick(note)}
               >
                 共有
+              </button>
+            </li>
+          ))}
+        </ul>
+        {/* 公開ノート一覧 */}
+        <h3 className="mt-8 mb-2 font-bold">公開ノート</h3>
+        <ul>
+          {publicNotes.map((note) => (
+            <li key={note.id} className="flex items-center justify-between py-2 border-b">
+              <span>{note.title ?? '無題'}</span>
+              <button
+                className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+                onClick={() => navigate(`/public/${note.id}`)}
+              >
+                閲覧
               </button>
             </li>
           ))}
