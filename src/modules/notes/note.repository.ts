@@ -58,11 +58,6 @@ export const noteRepository = {
         .single();
       return data;
     },
-    async delete(id: number){
-      const { error } = await supabase.rpc('delete_children_notes_recursively', {note_id: id,});
-      if(error !== null) throw new Error(error.message);
-      return true;
-    },
     async setPublic(id: number, isPublic: boolean) {
       const { data, error } = await supabase
         .from('notes')
@@ -72,6 +67,14 @@ export const noteRepository = {
         .single();
       if (error != null) throw new Error(error.message);
       return data;
+    },
+    async delete(id: number){
+      const { error } = await supabase
+        .from('notes')
+        .delete()
+        .eq('id', id);
+      if(error !== null) throw new Error(error.message);
+      return true;
     },
     async findPublicNotes() {
       const { data, error } = await supabase

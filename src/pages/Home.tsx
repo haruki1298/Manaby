@@ -61,6 +61,17 @@ export function Home() {
     setPublicNotes(notes ?? []);
   };
 
+  // 公開ノート削除
+  const handleDeletePublicNote = async (noteId: number) => {
+    await noteRepository.setPublic(noteId, false); // 公開解除（未公開に戻す）
+    fetchPublicNotes();
+    // 必要なら noteStore の該当ノートも更新
+    const updated = notes.map((note) =>
+      note.id === noteId ? { ...note, is_public: false } : note
+    );
+    noteStore.set(updated);
+  };
+
   return (
     <Card className="border-0 shadow-none w-1/2 m-auto">
       <CardHeader className="px-4 pb-3">
@@ -87,32 +98,76 @@ export function Home() {
         </div>
         {/* ノート一覧と共有ボタン */}
         <ul>
-          {notes.map((note) => (
-            <li key={note.id} className="flex items-center justify-between py-2 border-b">
-              <span>{note.title ?? '無題'}</span>
-              <button
-                className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
-                onClick={() => handleShareClick(note)}
-              >
-                共有
-              </button>
-            </li>
-          ))}
+          <li className="font-bold text-primary-300 mb-2">未公開ノート</li>
+          {notes.filter((note) => !note.is_public).length === 0 ? (
+            <li className="text-gray-400 italic py-2">ノートがないです</li>
+          ) : (
+            notes
+              .filter((note) => !note.is_public)
+              .map((note) => (
+                <li key={note.id} className="flex items-center justify-between py-2 border-b">
+                  <span>{note.title ?? '無題'}</span>
+                  <div>
+                    <button
+                      className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
+                      onClick={async () => {
+                        await noteRepository.setPublic(note.id, true);
+                        fetchPublicNotes();
+                      }}
+                      disabled={note.is_public}
+                    >
+                      {note.is_public ? "公開中" : "公開"}
+                    </button>
+                    <button
+                      className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
+                      onClick={async () => {
+                        await noteRepository.delete(note.id);
+                        noteStore.delete(note.id);
+                      }}
+                    >
+                      削除
+                    </button>
+                  </div>
+                </li>
+              ))
+          )}
         </ul>
         {/* 公開ノート一覧 */}
         <h3 className="mt-8 mb-2 font-bold">公開ノート</h3>
         <ul>
-          {publicNotes.map((note) => (
-            <li key={note.id} className="flex items-center justify-between py-2 border-b">
-              <span>{note.title ?? '無題'}</span>
-              <button
-                className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
-                onClick={() => navigate(`/public/${note.id}`)}
-              >
-                閲覧
-              </button>
-            </li>
-          ))}
+          {publicNotes.length === 0 ? (
+            <li className="text-gray-400 italic py-2">ノートがありません</li>
+          ) : (
+            publicNotes.map((note) => (
+              <li key={note.id} className="flex items-center justify-between py-2 border-b">
+                <span>{note.title ?? '無題'}</span>
+                <div>
+                  {/* 所有者は編集ボタンを表示 */}
+                  {note.user_id === currentUser?.id && (
+                    <button
+                      className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
+                      onClick={() => navigate(`/notes/${note.id}`)}
+                    >
+                      編集
+                    </button>
+                  )}
+                  {/* 閲覧ボタンは全員に表示 */}
+                  <button
+                    className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+                    onClick={() => navigate(`/public/${note.id}`)}
+                  >
+                    閲覧
+                  </button>
+                  <button
+                    className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
+                    onClick={() => handleDeletePublicNote(note.id)}
+                  >
+                    非表示
+                  </button>
+                </div>
+              </li>
+            ))
+          )}
         </ul>
       </CardContent>
       {/* 共有モーダル */}

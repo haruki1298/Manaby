@@ -35,36 +35,54 @@ body,
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    --primary-100: #d4eaf7;
+    --primary-200: #b6ccd8;
+    --primary-300: #3b3c3d;
+    --accent-100: #71c4ef;
+    --accent-200: #00668c;
+    --text-100: #1d1c1c;
+    --text-200: #313d44;
+    --bg-100: #fffefb;
+    --bg-200: #f5f4f1;
+    --bg-300: #cccbc8;
+
+    /* 既存の変数も上書き */
+    --background: var(--bg-100);
+    --foreground: var(--text-100);
+    --card: var(--bg-200);
+    --card-foreground: var(--text-200);
+    --primary: var(--primary-200);
+    --primary-foreground: var(--text-100);
+    --secondary: var(--primary-100);
+    --secondary-foreground: var(--text-200);
+    --accent: var(--accent-100);
+    --accent-foreground: var(--bg-100);
+    --muted: var(--bg-300);
+    --muted-foreground: var(--text-200);
+    --border: var(--primary-300);
+    --input: var(--primary-100);
+    --ring: var(--accent-200);
+    --radius: 0.75rem;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: #222831;
+    --foreground: #f5f4f1;
+    --card: #313d44;
+    --card-foreground: #fffefb;
+    --primary: #00668c;
+    --primary-foreground: #fffefb;
+    --secondary: #3b3c3d;
+    --secondary-foreground: #d4eaf7;
+    --accent: #71c4ef;
+    --accent-foreground: #1d1c1c;
+    --muted: #313d44;
+    --muted-foreground: #b6ccd8;
+    --border: #b6ccd8;
+    --input: #3b3c3d;
+    --ring: #71c4ef;
   }
 }
-
-
 
 @layer base {
   * {
@@ -72,5 +90,58 @@ body,
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, 'sans-serif';
+    font-size: 17px;
+    letter-spacing: 0.01em;
+    background: var(--background);
+    color: var(--foreground);
+    transition: background 0.3s, color 0.3s;
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, 'sans-serif';
+    font-weight: 700;
+    color: var(--primary-300);
+    letter-spacing: 0.02em;
+  }
+}
+
+@layer base {
+  .card {
+    background: var(--card);
+    color: var(--card-foreground);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.2s;
+  }
+  .card:hover {
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.12);
+  }
+  button {
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  }
+  button:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+    box-shadow: 0 4px 16px 0 rgba(0,0,0,0.08);
+  }
+}
+
+
+
+@layer base {
+  .fade-in {
+    animation: fadeIn 0.5s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
   }
 }
