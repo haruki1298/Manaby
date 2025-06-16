@@ -72,6 +72,10 @@ export function Home() {
     noteStore.set(updated);
   };
 
+  const getPublicNoteUrl = (noteId: number) => {
+    return `${window.location.origin}/public/${noteId}`;
+  };
+
   return (
     <Card className="border-0 shadow-none w-1/2 m-auto">
       <CardHeader className="px-4 pb-3">
@@ -111,8 +115,8 @@ export function Home() {
                     <button
                       className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
                       onClick={async () => {
-                        await noteRepository.setPublic(note.id, true);
-                        fetchPublicNotes();
+                        await noteRepository.setPublic(note.id, true); // ←公開処理
+                        fetchPublicNotes(); // 公開ノート一覧を再取得
                       }}
                       disabled={note.is_public}
                     >
@@ -139,32 +143,44 @@ export function Home() {
             <li className="text-gray-400 italic py-2">ノートがありません</li>
           ) : (
             publicNotes.map((note) => (
-              <li key={note.id} className="flex items-center justify-between py-2 border-b">
-                <span>{note.title ?? '無題'}</span>
+              <li key={note.id} className="flex items-center justify-between py-2 border-b text-500">
                 <div>
-                  {/* 所有者は編集ボタンを表示 */}
-                  {note.user_id === currentUser?.id && (
-                    <button
-                      className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
-                      onClick={() => navigate(`/notes/${note.id}`)}
-                    >
-                      編集
-                    </button>
-                  )}
-                  {/* 閲覧ボタンは全員に表示 */}
-                  <button
-                    className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
-                    onClick={() => navigate(`/public/${note.id}`)}
-                  >
-                    閲覧
-                  </button>
-                  <button
-                    className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
-                    onClick={() => handleDeletePublicNote(note.id)}
-                  >
-                    非表示
-                  </button>
+                  <span className="block">{note.title ?? '無題'}</span>
+                  <span className="block text-xs text-gray-400 mt-1">
+                    作成者: {note.user_id}
+                  </span>
                 </div>
+                <div>
+          {note.user_id === currentUser?.id ? (
+            <>
+              <button
+                className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
+                onClick={() => navigate(`/notes/${note.id}`)}
+              >
+                編集
+              </button>
+              <button
+                className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
+                onClick={() => handleDeletePublicNote(note.id)}
+              >
+                非表示
+              </button>
+              <button
+                className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+                onClick={() => navigate(`/public/${note.id}`)}
+              >
+                閲覧
+              </button>
+            </>
+          ) : (
+            <button
+              className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+              onClick={() => navigate(`/public/${note.id}`)}
+            >
+              閲覧
+            </button>
+          )}
+        </div>
               </li>
             ))
           )}
