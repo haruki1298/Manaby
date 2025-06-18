@@ -138,6 +138,10 @@ export function Home() {
     });
   }, [publicNotes, publicSort]);
 
+  function fetchPrivateNotes() {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <Card className="border-0 shadow-none w-1/2 m-auto">
       <CardHeader>
@@ -186,6 +190,7 @@ export function Home() {
                   </span>
                 </div>
                 <div className="flex">
+                  {/* 未公開ノートには編集・公開・削除ボタンを表示 */}
                   <button
                     className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
                     onClick={() => navigate(`/notes/${note.id}`)}
@@ -194,9 +199,22 @@ export function Home() {
                   </button>
                   <button
                     className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
-                    onClick={() => handlePublishNote(note.id)}
+                    onClick={async () => {
+                      await noteRepository.setPublic(note.id, true);
+                      fetchPrivateNotes();
+                      fetchPublicNotes();
+                    }}
                   >
                     公開
+                  </button>
+                  <button
+                    className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
+                    onClick={async () => {
+                      await noteRepository.delete(note.id);
+                      noteStore.delete(note.id);
+                    }}
+                  >
+                    削除
                   </button>
                 </div>
               </li>
