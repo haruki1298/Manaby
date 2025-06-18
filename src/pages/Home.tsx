@@ -168,7 +168,7 @@ export function Home() {
                       await noteRepository.setPublic(note.id, true); // ←公開処理
                       fetchPublicNotes(); // 公開ノート一覧を再取得
                     }}
-                    disabled={note.is_public}
+                    disabled={note.is_public ?? false}
                   >
                     {note.is_public ? "公開中" : "公開"}
                   </button>
