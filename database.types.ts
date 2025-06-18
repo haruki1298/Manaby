@@ -9,34 +9,120 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_deleted: boolean
+          is_hidden_by_moderator: boolean
+          note_id: number
+          parent_comment_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_deleted?: boolean
+          is_hidden_by_moderator?: boolean
+          note_id: number
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_deleted?: boolean
+          is_hidden_by_moderator?: boolean
+          note_id?: number
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_comments_note_id"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_collaborators: {
+        Row: {
+          created_at: string | null
+          id: number
+          note_id: number | null
+          permission: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          note_id?: number | null
+          permission?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          note_id?: number | null
+          permission?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_collaborators_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           views: number
           content: string | null
           created_at: string
           id: number
+          is_favorite: boolean
+          is_public: boolean | null
           parent_document: number | null
           title: string | null
           user_id: string
-          is_public: boolean
         }
         Insert: {
           content?: string | null
           created_at?: string
           id?: number
+          is_favorite?: boolean
+          is_public?: boolean | null
           parent_document?: number | null
           title?: string | null
           user_id: string
-          is_public?: boolean
         }
         Update: {
           content?: string | null
           created_at?: string
           id?: number
+          is_favorite?: boolean
+          is_public?: boolean | null
           parent_document?: number | null
           title?: string | null
           user_id?: string
-          is_public?: boolean
         }
         Relationships: []
       }
@@ -51,6 +137,8 @@ export type Database = {
           content: string | null
           created_at: string
           id: number
+          is_favorite: boolean
+          is_public: boolean | null
           parent_document: number | null
           title: string | null
           user_id: string
@@ -58,7 +146,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      permission_type: "VIEWER" | "EDITOR"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -77,7 +165,7 @@ export type Tables<
   }
     ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -173,6 +261,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      permission_type: ["VIEWER", "EDITOR"],
+    },
   },
 } as const
