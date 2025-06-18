@@ -2,15 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCurrentUserStore } from '@/modules/auth/current-user.state';
 import { noteRepository } from '@/modules/notes/note.repository';
 import { useNoteStore } from '@/modules/notes/note.state';
-import { Plus, Star, StarOff } from 'lucide-react';
+import { Star, StarOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShareModal } from '@/components/ShareModal';
 import { Note } from '@/modules/notes/note.entity'; // Note型が必要な場合
 
+type SortKey = 'created_at' | 'views';
+
 export function Home() {
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
+  const [] = useState('');
   const { currentUser } = useCurrentUserStore();
   const noteStore = useNoteStore();
 
@@ -26,6 +28,16 @@ export function Home() {
   // お気に入りノートIDの配列
   const [favoriteNoteIds, setFavoriteNoteIds] = useState<number[]>([]);
 
+  // 並び替えキーと順序の状態
+  const [] = useState<SortKey>('created_at');
+  const [] = useState<'asc' | 'desc'>('desc'); // 降順がデフォルト
+  // 未公開ノート用
+  const [privateSortKey, setPrivateSortKey] = useState<SortKey>('created_at');
+  const [privateSortOrder, setPrivateSortOrder] = useState<'asc' | 'desc'>('desc');
+  // 公開ノート用
+  const [publicSortKey, setPublicSortKey] = useState<SortKey>('created_at');
+  const [publicSortOrder, setPublicSortOrder] = useState<'asc' | 'desc'>('desc');
+
   useEffect(() => {
     fetchPublicNotes();
   }, []);
@@ -36,18 +48,8 @@ export function Home() {
     if (stored) setFavoriteNoteIds(JSON.parse(stored));
   }, []);
 
-  const createNote = async () => {
-    const newNote = await noteRepository.create(currentUser!.id, { title });
-    noteStore.set([newNote]);
-    setTitle('');
-    navigate(`/notes/${newNote.id}`);
-  };
 
   // 共有ボタン押下時
-  const handleShareClick = (note: Note) => {
-    setSelectedNote(note);
-    setIsShareModalOpen(true);
-  };
 
   // 共有処理（API呼び出し部分は仮実装。実際はtRPCやAPI経由で実装）
   const handleShare = async (email: string) => {
@@ -95,8 +97,25 @@ export function Home() {
     saveFavorites(updated);
   };
 
-  const getPublicNoteUrl = (noteId: number) => {
-    return `${window.location.origin}/public/${noteId}`;
+
+  // 並び替え関数
+  const getSortedNotes = (
+    notes: Note[],
+    sortKey: SortKey,
+    sortOrder: 'asc' | 'desc'
+  ) => {
+    return [...notes].sort((a, b) => {
+      if (sortKey === 'created_at') {
+        const aTime = new Date(a.created_at).getTime();
+        const bTime = new Date(b.created_at).getTime();
+        return sortOrder === 'asc' ? aTime - bTime : bTime - aTime;
+      } else if (sortKey === 'views') {
+        const aViews = Number(a.views ?? 0);
+        const bViews = Number(b.views ?? 0);
+        return sortOrder === 'asc' ? aViews - bViews : bViews - aViews;
+      }
+      return 0;
+    });
   };
 
   return (
@@ -107,70 +126,78 @@ export function Home() {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4">
-        <div className="flex gap-2 mb-4">
-          <input
-            className="h-9 flex-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
-            placeholder="ノートのタイトルを入力"
-            type="text"
-            onChange={(e) => setTitle(e.target.value)}
-            value={title}
-          />
-          <button
-            className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={createNote}
+        {/* 未公開ノート */}
+        <div className="flex gap-2 mb-2 items-center">
+          <span className="font-bold text-primary-300">未公開ノート</span>
+          <select
+            className="border rounded px-2 py-1 text-sm"
+            value={privateSortKey}
+            onChange={e => setPrivateSortKey(e.target.value as SortKey)}
           >
-            <Plus className="h-4 w-4" />
-            <span className="ml-1">ノート作成</span>
+            <option value="created_at">作成日</option>
+            <option value="views">閲覧数</option>
+          </select>
+          <button
+            className="border rounded px-2 py-1 text-sm"
+            onClick={() => setPrivateSortOrder(order => order === 'asc' ? 'desc' : 'asc')}
+          >
+            {privateSortOrder === 'asc' ? '昇順' : '降順'}
           </button>
         </div>
-        {/* ノート一覧と共有ボタン */}
         <ul>
-          <li className="font-bold text-primary-300 mb-2">未公開ノート</li>
-          {notes.filter((note) => !note.is_public).length === 0 ? (
+          {getSortedNotes(
+            notes.filter(note => !note.is_public),
+            privateSortKey,
+            privateSortOrder
+          ).length === 0 ? (
             <li className="text-gray-400 italic py-2">ノートがないです</li>
           ) : (
-            notes
-              .filter((note) => !note.is_public)
-              .map((note) => (
-                <li key={note.id} className="flex items-center justify-between py-2 border-b">
-                  <span>
-                    {note.title ?? '無題'}
-                  </span>
-                  <div>
-                    <button
-                      className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
-                      onClick={async () => {
-                        await noteRepository.setPublic(note.id, true); // ←公開処理
-                        fetchPublicNotes(); // 公開ノート一覧を再取得
-                      }}
-                      disabled={note.is_public}
-                    >
-                      {note.is_public ? "公開中" : "公開"}
-                    </button>
-                    <button
-                      className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
-                      onClick={async () => {
-                        await noteRepository.delete(note.id);
-                        noteStore.delete(note.id);
-                      }}
-                    >
-                      削除
-                    </button>
-                  </div>
-                </li>
-              ))
-            )
-          }
+            getSortedNotes(
+              notes.filter(note => !note.is_public),
+              privateSortKey,
+              privateSortOrder
+            ).map(note => (
+              <li key={note.id} className="flex items-center justify-between py-2 border-b">
+                <span>
+                  {note.title ?? '無題'}
+                </span>
+                <div>
+                  <button
+                    className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
+                    onClick={async () => {
+                      await noteRepository.setPublic(note.id, true); // ←公開処理
+                      fetchPublicNotes(); // 公開ノート一覧を再取得
+                    }}
+                    disabled={note.is_public}
+                  >
+                    {note.is_public ? "公開中" : "公開"}
+                  </button>
+                  <button
+                    className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
+                    onClick={async () => {
+                      await noteRepository.delete(note.id);
+                      noteStore.delete(note.id);
+                    }}
+                  >
+                    削除
+                  </button>
+                </div>
+              </li>
+            ))
+          )}
         
         </ul>
         {/* お気に入りノート一覧 */}
         <h3 className="mt-8 mb-2 font-bold">お気に入り</h3>
         <ul>
-          {publicNotes.filter(note => favoriteNoteIds.includes(note.id)).length === 0 ? (
+          {favoriteNoteIds
+            .map(id => publicNotes.find(note => note.id === id))
+            .filter((note): note is Note => !!note).length === 0 ? (
             <li className="text-gray-400 italic py-2">お気に入りがありません</li>
           ) : (
-            publicNotes
-              .filter(note => favoriteNoteIds.includes(note.id))
+            favoriteNoteIds
+              .map(id => publicNotes.find(note => note.id === id))
+              .filter((note): note is Note => !!note)
               .map(note => (
                 <li key={note.id} className="flex items-center justify-between py-2 border-b">
                   <span>{note.title ?? '無題'}</span>
@@ -193,13 +220,37 @@ export function Home() {
               ))
           )}
         </ul>
-        {/* 公開ノート一覧 */}
-        <h3 className="mt-8 mb-2 font-bold">公開ノート</h3>
+        {/* 公開ノート */}
+        <div className="flex gap-2 mt-8 mb-2 items-center">
+          <span className="font-bold">公開ノート</span>
+          <select
+            className="border rounded px-2 py-1 text-sm"
+            value={publicSortKey}
+            onChange={e => setPublicSortKey(e.target.value as SortKey)}
+          >
+            <option value="created_at">作成日</option>
+            <option value="views">閲覧数</option>
+          </select>
+          <button
+            className="border rounded px-2 py-1 text-sm"
+            onClick={() => setPublicSortOrder(order => order === 'asc' ? 'desc' : 'asc')}
+          >
+            {publicSortOrder === 'asc' ? '昇順' : '降順'}
+          </button>
+        </div>
         <ul>
-          {publicNotes.length === 0 ? (
+          {getSortedNotes(
+            publicNotes,
+            publicSortKey,
+            publicSortOrder
+          ).length === 0 ? (
             <li className="text-gray-400 italic py-2">ノートがありません</li>
           ) : (
-            publicNotes.map((note) => (
+            getSortedNotes(
+              publicNotes,
+              publicSortKey,
+              publicSortOrder
+            ).map(note => (
               <li key={note.id} className="flex items-center justify-between py-2 border-b text-500">
                 <div>
                   <span className="block">
@@ -221,36 +272,36 @@ export function Home() {
                   </span>
                 </div>
                 <div>
-          {note.user_id === currentUser?.id ? (
-            <>
-              <button
-                className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
-                onClick={() => navigate(`/notes/${note.id}`)}
-              >
-                編集
-              </button>
-              <button
-                className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
-                onClick={() => handleDeletePublicNote(note.id)}
-              >
-                非表示
-              </button>
-              <button
-                className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
-                onClick={() => navigate(`/public/${note.id}`)}
-              >
-                閲覧
-              </button>
-            </>
-          ) : (
-            <button
-              className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
-              onClick={() => navigate(`/public/${note.id}`)}
-            >
-              閲覧
-            </button>
-          )}
-        </div>
+                  {note.user_id === currentUser?.id ? (
+                    <>
+                      <button
+                        className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
+                        onClick={() => navigate(`/notes/${note.id}`)}
+                      >
+                        編集
+                      </button>
+                      <button
+                        className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
+                        onClick={() => handleDeletePublicNote(note.id)}
+                      >
+                        非表示
+                      </button>
+                      <button
+                        className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+                        onClick={() => navigate(`/public/${note.id}`)}
+                      >
+                        閲覧
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+                      onClick={() => navigate(`/public/${note.id}`)}
+                    >
+                      閲覧
+                    </button>
+                  )}
+                </div>
               </li>
             ))
           )}

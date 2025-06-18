@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       notes: {
         Row: {
+          views: number
           content: string | null
           created_at: string
           id: number
