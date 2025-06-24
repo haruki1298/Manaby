@@ -116,14 +116,7 @@ export function Home() {
     } catch (error) {
       console.error('Failed to create note:', error);
       alert('ノートの作成に失敗しました。');
-    }
-  };
-
-  // 共有ボタン押下時
-  const handleShareClick = (note: Note) => {
-    setSelectedNote(note);
-    setIsShareModalOpen(true);
-  };
+    }  };
 
   // 共有処理（API呼び出し部分は仮実装。実際はtRPCやAPI経由で実装）
   const handleShare = async (email: string) => {

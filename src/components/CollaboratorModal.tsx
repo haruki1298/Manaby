@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useCurrentUserStore } from '@/modules/auth/current-user.state';
 import { noteRepository } from '@/modules/notes/note.repository';
-import { X, UserPlus, Eye, Edit } from 'lucide-react';
+import { X, UserPlus, Edit } from 'lucide-react';
 
 interface Collaborator {
   id: number;
@@ -21,9 +20,7 @@ interface CollaboratorModalProps {
 export function CollaboratorModal({ isOpen, onClose, noteId, isOwner }: CollaboratorModalProps) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [newCollaboratorEmail, setNewCollaboratorEmail] = useState('');
-  const [permission, setPermission] = useState<'VIEWER' | 'EDITOR'>('EDITOR');
   const [loading, setLoading] = useState(false);
-  const { currentUser } = useCurrentUserStore();
 
   useEffect(() => {
     if (isOpen) {
@@ -39,13 +36,12 @@ export function CollaboratorModal({ isOpen, onClose, noteId, isOwner }: Collabor
       console.error('Failed to fetch collaborators:', error);
     }
   };
-
   const handleAddCollaborator = async () => {
     if (!newCollaboratorEmail.trim()) return;
     
     setLoading(true);
     try {
-      await noteRepository.addCollaborator(noteId, newCollaboratorEmail, permission);
+      await noteRepository.addCollaborator(noteId, newCollaboratorEmail, 'write');
       setNewCollaboratorEmail('');
       fetchCollaborators();
     } catch (error: any) {
@@ -61,15 +57,6 @@ export function CollaboratorModal({ isOpen, onClose, noteId, isOwner }: Collabor
       fetchCollaborators();
     } catch (error: any) {
       alert(error.message || '共同編集者の削除に失敗しました');
-    }
-  };
-
-  const handlePermissionChange = async (userId: string, newPermission: 'VIEWER' | 'EDITOR') => {
-    try {
-      await noteRepository.updateCollaboratorPermission(noteId, userId, newPermission);
-      fetchCollaborators();
-    } catch (error: any) {
-      alert(error.message || '権限の変更に失敗しました');
     }
   };
 
@@ -90,8 +77,7 @@ export function CollaboratorModal({ isOpen, onClose, noteId, isOwner }: Collabor
 
         {isOwner && (
           <div className="mb-6">
-            <h3 className="font-medium mb-2">新しい共同編集者を追加</h3>
-            <div className="flex gap-2 mb-2">
+            <h3 className="font-medium mb-2">新しい共同編集者を追加</h3>            <div className="flex gap-2 mb-2">
               <input
                 type="email"
                 placeholder="メールアドレス"
@@ -99,14 +85,9 @@ export function CollaboratorModal({ isOpen, onClose, noteId, isOwner }: Collabor
                 onChange={(e) => setNewCollaboratorEmail(e.target.value)}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
               />
-              <select
-                value={permission}
-                onChange={(e) => setPermission(e.target.value as 'VIEWER' | 'EDITOR')}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="VIEWER">閲覧のみ</option>
-                <option value="EDITOR">編集可能</option>
-              </select>
+              <div className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100">
+                編集可能
+              </div>
             </div>
             <button
               onClick={handleAddCollaborator}
@@ -126,25 +107,16 @@ export function CollaboratorModal({ isOpen, onClose, noteId, isOwner }: Collabor
           ) : (
             <div className="space-y-2">
               {collaborators.map((collaborator) => (
-                <div key={collaborator.id} className="flex items-center justify-between p-2 border rounded">
-                  <div className="flex items-center gap-2">
-                    {collaborator.permission === 'VIEWER' ? (
-                      <Eye className="h-4 w-4 text-gray-500" />
-                    ) : (
-                      <Edit className="h-4 w-4 text-blue-500" />
-                    )}
-                    <span className="text-sm">{collaborator.user_id.slice(-8)}</span>
+                <div key={collaborator.id} className="flex items-center justify-between p-2 border rounded">                  <div className="flex items-center gap-2">
+                    <Edit className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm">{collaborator.user_id.length > 20 ? collaborator.user_id : collaborator.user_id}</span>
                   </div>
                   
                   {isOwner ? (
-                    <div className="flex items-center gap-2">                      <select
-                        value={collaborator.permission || 'VIEWER'}
-                        onChange={(e) => handlePermissionChange(collaborator.user_id, e.target.value as 'VIEWER' | 'EDITOR')}
-                        className="px-2 py-1 border border-gray-300 rounded text-xs"
-                      >
-                        <option value="VIEWER">閲覧のみ</option>
-                        <option value="EDITOR">編集可能</option>
-                      </select>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                        編集可能
+                      </span>
                       <button
                         onClick={() => handleRemoveCollaborator(collaborator.user_id)}
                         className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
@@ -154,7 +126,7 @@ export function CollaboratorModal({ isOpen, onClose, noteId, isOwner }: Collabor
                     </div>
                   ) : (
                     <span className="text-xs text-gray-500">
-                      {collaborator.permission === 'VIEWER' ? '閲覧のみ' : '編集可能'}
+                      編集可能
                     </span>
                   )}
                 </div>
