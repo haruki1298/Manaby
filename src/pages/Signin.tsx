@@ -58,9 +58,10 @@ function Signin() {
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center">
-        <h2 className="text-3xl font-extrabold text-gray-900">
-          Manaby
+        <h2 className="text-5xl font-extrabold bg-gradient-to-r from-blue-500 via-pink-500 to-yellow-500 bg-clip-text text-transparent drop-shadow-lg animate-logo-fade">
+        Manaby
         </h2>
+
         <div className="mt-8 w-full max-w-md">
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <form className="space-y-6" onSubmit={handleSubmit}>
