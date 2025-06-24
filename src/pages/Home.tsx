@@ -8,6 +8,10 @@ import { useNavigate } from 'react-router-dom';
 import { ShareModal } from '@/components/ShareModal';
 import { Note } from '@/modules/notes/note.entity';
 
+type NoteWithCreator = Note & {
+  creator_name?: string;
+};
+
 type SortKey = 'created_at' | 'views';
 
 export function Home() {
@@ -19,9 +23,8 @@ export function Home() {
   // 共有モーダル用の状態
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-
   // 公開ノート用の状態
-  const [publicNotes, setPublicNotes] = useState<Note[]>([]);
+  const [publicNotes, setPublicNotes] = useState<NoteWithCreator[]>([]);
 
   // お気に入りノートIDの配列
   const [favoriteNoteIds, setFavoriteNoteIds] = useState<number[]>([]);
@@ -77,12 +80,15 @@ export function Home() {
   };
 
   // ノート一覧取得（例: jotaiストアから）
-  const notes = noteStore.getAll();
-
-  // 公開ノート取得
+  const notes = noteStore.getAll();  // 公開ノート取得
   const fetchPublicNotes = async () => {
-    const notes = await noteRepository.findPublicNotes();
-    setPublicNotes(notes ?? []);
+    try {
+      const notes = await noteRepository.findPublicNotes();
+      setPublicNotes((notes as any) ?? []);
+    } catch (error) {
+      console.error('Failed to fetch public notes:', error);
+      setPublicNotes([]);
+    }
   };
 
   // 公開ノート削除
@@ -109,13 +115,12 @@ export function Home() {
       : [...favoriteNoteIds, noteId];
     saveFavorites(updated);
   };
-
   // 並び替え関数
-  const getSortedNotes = (
-    notes: Note[],
+  const getSortedNotes = <T extends Note>(
+    notes: T[],
     sortKey: SortKey,
     sortOrder: 'asc' | 'desc',
-  ) => {
+  ): T[] => {
     return [...notes].sort((a, b) => {
       if (sortKey === 'created_at') {
         const aTime = new Date(a.created_at).getTime();
@@ -274,11 +279,8 @@ export function Home() {
                         <Star className="inline h-4 w-4 text-yellow-400" />
                       ) : (
                         <StarOff className="inline h-4 w-4 text-gray-400" />
-                      )}
-                    </button>
-                  </span>
-                  <span className="block text-xs text-gray-400 mt-1">
-                    作成者: {note.user_id}
+                      )}                    </button>                  </span>                  <span className="block text-xs text-gray-400 mt-1">
+                    作成者: {note.creator_name || 'Unknown User'}
                   </span>
                 </div>
                 <div>
@@ -319,23 +321,23 @@ export function Home() {
 
         {/* お気に入りノート一覧 */}
         <h3 className="mt-8 mb-2 font-bold">お気に入り</h3>
-        <ul>
-          {favoriteNoteIds
+        <ul>          {favoriteNoteIds
             .map((id) => publicNotes.find((note) => note.id === id))
-            .filter((note): note is Note => !!note).length === 0 ? (
+            .filter((note): note is NoteWithCreator => !!note).length === 0 ? (
             <li className="text-gray-400 italic py-2">
               お気に入りがありません
-            </li>
-          ) : (
-            favoriteNoteIds
+            </li>          ) : (            favoriteNoteIds
               .map((id) => publicNotes.find((note) => note.id === id))
-              .filter((note): note is Note => !!note)
+              .filter((note): note is NoteWithCreator => !!note)
               .map((note) => (
                 <li
                   key={note.id}
                   className="flex items-center justify-between py-2 border-b"
                 >
-                  <span>{note.title ?? '無題'}</span>
+                  <div>                    <span className="block">{note.title ?? '無題'}</span>                    <span className="block text-xs text-gray-400 mt-1">
+                      作成者: {note.creator_name || 'Unknown User'}
+                    </span>
+                  </div>
                   <div>
                     <button
                       className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"

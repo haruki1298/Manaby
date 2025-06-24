@@ -13,9 +13,8 @@ const PublicNote = () => {
   }, [id]);
 
   const fetchNote = async () => {
-    const notes = await noteRepository.findPublicNotes();
-    const found = notes?.find((n) => n.id === id);
-    setNote(found);
+    const noteWithCreator = await noteRepository.getPublicNoteWithCreator(id);
+    setNote(noteWithCreator);
   };
 
   if (!note) return <div>ノートが見つかりません</div>;
@@ -23,7 +22,9 @@ const PublicNote = () => {
   return (
     <div className="pb-40 pt-20">
       <div className="md:max-w-3xl lg:md-max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">{note.title ?? "無題"}</h1>
+        <h1 className="text-3xl font-bold mb-4">{note.title ?? "無題"}</h1>        <div className="mb-4 text-gray-600 text-sm">
+          作成者: {note.creator_name} | 作成日: {new Date(note.created_at).toLocaleDateString('ja-JP')}
+        </div>
         <Editor initialContent={note.content} onChange={() => {}} readOnly />
         <div className="mt-4 text-gray-500 text-sm">※このノートは閲覧専用です</div>
       </div>

@@ -75,14 +75,25 @@ export const noteRepository = {
         .eq('id', id);
       if(error !== null) throw new Error(error.message);
       return true;
-    },
-    async findPublicNotes() {
+    },    async findPublicNotes() {
       const { data, error } = await supabase
         .from('notes')
-        .select()
+        .select('*, creator_name')
         .eq('is_public', true)
         .order('created_at', { ascending: false });
       if (error != null) throw new Error(error.message);
       return data;
+    },
+
+    async getPublicNoteWithCreator(noteId: number) {
+      const { data: note, error } = await supabase
+        .from('notes')
+        .select('*, creator_name')
+        .eq('id', noteId)
+        .eq('is_public', true)
+        .single();
+      
+      if (error != null) throw new Error(error.message);
+      return note;
     },
 };
