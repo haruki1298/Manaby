@@ -89,14 +89,14 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "notes"
             referencedColumns: ["id"]
-          },
-        ]
+          },        ]
       }
       notes: {
         Row: {
           views: number
           content: string | null
           created_at: string
+          creator_name: string | null
           id: number
           is_favorite: boolean
           is_public: boolean | null
@@ -107,6 +107,7 @@ export type Database = {
         Insert: {
           content?: string | null
           created_at?: string
+          creator_name?: string | null
           id?: number
           is_favorite?: boolean
           is_public?: boolean | null
@@ -117,6 +118,7 @@ export type Database = {
         Update: {
           content?: string | null
           created_at?: string
+          creator_name?: string | null
           id?: number
           is_favorite?: boolean
           is_public?: boolean | null

@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShareModal } from '@/components/ShareModal';
 import { Note } from '@/modules/notes/note.entity';
+import { supabase } from '@/lib/supabase';
 
 type NoteWithCreator = Note & {
   creator_name?: string;
@@ -34,10 +35,67 @@ export function Home() {
   const [privateSortOrder, setPrivateSortOrder] = useState<'asc' | 'desc'>('desc');
   // 公開ノート用
   const [publicSortKey, setPublicSortKey] = useState<SortKey>('created_at');
-  const [publicSortOrder, setPublicSortOrder] = useState<'asc' | 'desc'>('desc');
-
-  useEffect(() => {
+  const [publicSortOrder, setPublicSortOrder] = useState<'asc' | 'desc'>('desc');  useEffect(() => {
     fetchPublicNotes();
+    
+    // Supabaseのリアルタイム機能で公開ノートの変更を監視
+    const channel = supabase
+      .channel('public-notes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE すべての変更を監視
+          schema: 'public',
+          table: 'notes',
+        },
+        (payload: any) => {
+          console.log('Notes changed:', payload);
+          
+          // 公開ノートに関連する変更のみ処理
+          const { eventType, new: newRecord, old: oldRecord } = payload;
+          
+          if (eventType === 'INSERT' && newRecord?.is_public) {
+            // 新しい公開ノートが追加された場合
+            fetchPublicNotes();
+          } else if (eventType === 'UPDATE') {
+            // ノートが更新された場合
+            const wasPublic = oldRecord?.is_public;
+            const isNowPublic = newRecord?.is_public;
+            
+            if (!wasPublic && isNowPublic) {
+              // 非公開から公開に変更された場合
+              fetchPublicNotes();
+            } else if (wasPublic && !isNowPublic) {
+              // 公開から非公開に変更された場合
+              setPublicNotes(prev => prev.filter(note => note.id !== newRecord.id));
+            } else if (wasPublic && isNowPublic) {
+              // 公開ノートの内容が更新された場合
+              fetchPublicNotes();
+            }
+          } else if (eventType === 'DELETE' && oldRecord?.is_public) {
+            // 公開ノートが削除された場合
+            setPublicNotes(prev => prev.filter(note => note.id !== oldRecord.id));
+          }
+        }
+      )
+      .subscribe();
+
+    // クリーンアップ関数でサブスクリプションを解除
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // ポーリング機能（リアルタイム機能のフォールバック）
+  useEffect(() => {
+    // 30秒ごとに公開ノートを更新
+    const pollInterval = setInterval(() => {
+      fetchPublicNotes();
+    }, 30000); // 30秒間隔
+
+    return () => {
+      clearInterval(pollInterval);
+    };
   }, []);
 
   // お気に入り情報をローカルストレージから取得
@@ -134,6 +192,19 @@ export function Home() {
       return 0;
     });
   };
+
+  // ページフォーカス時の更新
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchPublicNotes();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
 
   return (
     <Card className="border-0 shadow-none w-1/2 m-auto">
