@@ -1,22 +1,18 @@
 import Editor from '@/components/Editor';
 import { TitleInput } from '@/components/TitleInput';
-import { CollaboratorModal } from '@/components/CollaboratorModal';
-import { ShareModal } from '@/components/ShareModal';
 import { useCurrentUserStore } from '@/modules/auth/current-user.state';
 import { noteRepository } from '@/modules/notes/note.repository';
 import { useNoteStore } from '@/modules/notes/note.state';
 import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Users, Share, Mail } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 const NoteDetail = () => {
   const params = useParams();  const id = parseInt(params.id!);
   const [isLoading, setIsLoading] = useState(false);
   const { currentUser } = useCurrentUserStore();  const noteStore = useNoteStore();
   const note = noteStore.getOne(id);
-  const [isCollaboratorModalOpen, setIsCollaboratorModalOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [canEdit, setCanEdit] = useState(true);
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [editSessionId, setEditSessionId] = useState<string | null>(null);
@@ -127,15 +123,6 @@ const NoteDetail = () => {
     if(updataNote == null) return;
     noteStore.set([updataNote]);
     return updataNote;
-  };  const handleShareByEmail = async (email: string) => {
-    try {
-      await noteRepository.shareNoteByEmail(id, email, 'write');
-      setIsShareModalOpen(false);
-      alert(`${email} にノートを共有しました`);
-    } catch (error) {
-      console.error('共有エラー:', error);
-      alert('共有に失敗しました: ' + (error as Error).message);
-    }
   };
 
   if(isLoading) return <div />;
@@ -152,26 +139,6 @@ const NoteDetail = () => {
                 <Users className="h-4 w-4" />
                 <span>{activeUsers.length}人が編集中</span>
               </div>
-            )}
-          </div>
-            <div className="flex gap-2">
-            {note?.user_id === currentUser?.id && (
-              <>
-                <button
-                  onClick={() => setIsCollaboratorModalOpen(true)}
-                  className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  <Share className="h-4 w-4" />
-                  共同編集者
-                </button>
-                <button
-                  onClick={() => setIsShareModalOpen(true)}
-                  className="flex items-center gap-1 px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  <Mail className="h-4 w-4" />
-                  メール共有
-                </button>
-              </>
             )}
           </div>
         </div>
@@ -192,21 +159,7 @@ const NoteDetail = () => {
             このノートは閲覧専用です。編集権限がありません。
           </div>
         )}
-      </div>      {/* 共同編集者管理モーダル */}
-      <CollaboratorModal
-        isOpen={isCollaboratorModalOpen}
-        onClose={() => setIsCollaboratorModalOpen(false)}
-        noteId={id}
-        isOwner={note?.user_id === currentUser?.id}
-      />
-
-      {/* メール共有モーダル */}
-      <ShareModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        onShare={handleShareByEmail}
-        noteTitle={note?.title ?? '無題'}
-      />
+      </div>
     </div>
   );
 };

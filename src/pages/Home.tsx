@@ -5,7 +5,6 @@ import { useNoteStore } from '@/modules/notes/note.state';
 import { Star, StarOff, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShareModal } from '@/components/ShareModal';
 import { Note } from '@/modules/notes/note.entity';
 import { supabase } from '@/lib/supabase';
 
@@ -21,9 +20,6 @@ export function Home() {
   const { currentUser } = useCurrentUserStore();
   const noteStore = useNoteStore();
 
-  // 共有モーダル用の状態
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   // 公開ノート用の状態
   const [publicNotes, setPublicNotes] = useState<NoteWithCreator[]>([]);
 
@@ -117,18 +113,6 @@ export function Home() {
       console.error('Failed to create note:', error);
       alert('ノートの作成に失敗しました。');
     }  };
-
-  // 共有処理（API呼び出し部分は仮実装。実際はtRPCやAPI経由で実装）
-  const handleShare = async (email: string) => {
-    try {
-      // await api.note.share.mutate({ noteId: selectedNote!.id, email });
-      alert(`「${selectedNote?.title ?? '無題'}」を${email}に共有しました（API実装は別途）`);
-      setIsShareModalOpen(false);
-      setSelectedNote(null);
-    } catch (e: any) {
-      alert(e.message ?? '共有に失敗しました');
-    }
-  };
 
   // ノート一覧取得（例: jotaiストアから）
   const notes = noteStore.getAll();  // 公開ノート取得
@@ -422,14 +406,6 @@ export function Home() {
           )}
         </ul>
       </CardContent>
-      
-      {/* 共有モーダル */}
-      <ShareModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        onShare={handleShare}
-        noteTitle={selectedNote?.title ?? ''}
-      />
     </Card>
   );
 }
