@@ -3,9 +3,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Settings, User, Moon, Sun, Shield, Palette } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/modules/settings/settings.state.tsx';
 
@@ -17,6 +18,9 @@ interface SettingsModalProps {
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('general');
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const [nameUpdateMessage, setNameUpdateMessage] = useState<string | null>(null);
+  const [tempDisplayName, setTempDisplayName] = useState('');
   const {
     settings,
     setAutoSave,
@@ -28,6 +32,50 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setBio,
     resetSettings,
   } = useSettings();
+
+  // 設定が変更されたときにtempDisplayNameを同期
+  useEffect(() => {
+    setTempDisplayName(settings.displayName || '');
+  }, [settings.displayName]);
+
+  // モーダルが開かれたときにも同期
+  useEffect(() => {
+    if (isOpen) {
+      setTempDisplayName(settings.displayName || '');
+      setNameUpdateMessage(null);
+    }
+  }, [isOpen, settings.displayName]);
+
+  const handleDisplayNameSubmit = async () => {
+    setIsUpdatingName(true);
+    setNameUpdateMessage(null);
+    
+    try {
+      await setDisplayName(tempDisplayName);
+      setNameUpdateMessage(t('settings.displayName.notesUpdated'));
+      setTimeout(() => setNameUpdateMessage(null), 3000);
+    } catch (error) {
+      console.error('Display name update error:', error);
+      let errorMessage = t('settings.displayName.updateError');
+      
+      if (error instanceof Error) {
+        if (error.message === 'SESSION_EXPIRED' || error.message.includes('Auth session missing')) {
+          errorMessage = t('settings.displayName.sessionExpired');
+        } else if (error.message === 'NO_SESSION') {
+          errorMessage = t('settings.displayName.noSession');
+        } else if (error.message === 'REFRESH_FAILED') {
+          errorMessage = t('settings.displayName.sessionExpired');
+        }
+      }
+      
+      setNameUpdateMessage(errorMessage);
+      setTimeout(() => setNameUpdateMessage(null), 5000);
+    } finally {
+      setIsUpdatingName(false);
+    }
+  };
+
+  const isDisplayNameChanged = tempDisplayName !== settings.displayName;
 
   const tabs = [
     { id: 'general', label: t('settings.general'), icon: Settings },
@@ -103,13 +151,32 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                         {t('settings.displayName')}
                       </label>
-                      <input
-                        type="text"
-                        value={settings.displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder={t('settings.displayName.placeholder')}
-                        className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
-                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={tempDisplayName}
+                          onChange={(e) => setTempDisplayName(e.target.value)}
+                          placeholder={t('settings.displayName.placeholder')}
+                          disabled={isUpdatingName}
+                          className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                        <button
+                          onClick={handleDisplayNameSubmit}
+                          disabled={isUpdatingName || !isDisplayNameChanged}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-white rounded-md transition-colors duration-150 font-medium"
+                        >
+                          {isUpdatingName ? t('common.loading') : t('common.save')}
+                        </button>
+                      </div>
+                      {nameUpdateMessage && (
+                        <p className={`text-sm mt-1 ${
+                          nameUpdateMessage.includes('successfully') || nameUpdateMessage.includes('更新されました')
+                            ? 'text-green-600 dark:text-green-400' 
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {nameUpdateMessage}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
@@ -274,6 +341,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <Settings className="w-5 h-5" />
                 {t('settings.title')}
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                {t('settings.description')}
+              </DialogDescription>
             </DialogHeader>
             <nav className="p-4 space-y-1">
               {tabs.map((tab) => (

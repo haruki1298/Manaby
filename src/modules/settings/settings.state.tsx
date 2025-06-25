@@ -1,5 +1,8 @@
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import i18n from '../../lib/i18n';
+import { authRepository } from '../auth/auath.repository';
+import { noteRepository } from '../notes/note.repository';
+import { useCurrentUserStore } from '../auth/current-user.state';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -31,7 +34,7 @@ interface SettingsContextType {
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
   setDefaultNoteVisibility: (visibility: 'private' | 'public') => void;
-  setDisplayName: (name: string) => void;
+  setDisplayName: (name: string) => Promise<void>;
   setBio: (bio: string) => void;
   resetSettings: () => Promise<void>;
 }
@@ -44,6 +47,7 @@ interface SettingsProviderProps {
 
 export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
   const [settings, setSettings] = useState<SettingsState>(defaultSettings);
+  const currentUserStore = useCurrentUserStore();
 
   // ローカルストレージから設定を読み込み
   useEffect(() => {
@@ -55,11 +59,25 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       if (savedSettings) {
         try {
           const parsed = JSON.parse(savedSettings);
-          const newSettings = { ...defaultSettings, ...parsed };
+          let newSettings = { ...defaultSettings, ...parsed };
+          
+          // 現在のユーザー情報から表示名を初期化（または更新）
+          if (currentUserStore.currentUser?.user_metadata?.name) {
+            newSettings.displayName = currentUserStore.currentUser.user_metadata.name;
+          }
+          
           setSettings(newSettings);
           languageToSet = newSettings.defaultLanguage;
         } catch (error) {
           console.error('Failed to load settings:', error);
+        }
+      } else {
+        // 初回起動時：現在のユーザー情報から表示名を設定
+        if (currentUserStore.currentUser?.user_metadata?.name) {
+          setSettings(prev => ({
+            ...prev,
+            displayName: currentUserStore.currentUser!.user_metadata.name
+          }));
         }
       }
       
@@ -84,7 +102,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     };
 
     loadSettings();
-  }, []);
+  }, [currentUserStore.currentUser]);
 
   // 設定変更時にローカルストレージに保存
   useEffect(() => {
@@ -121,8 +139,65 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     updateSettings({ defaultNoteVisibility: visibility });
   };
 
-  const setDisplayName = (name: string) => {
-    updateSettings({ displayName: name });
+  const setDisplayName = async (name: string) => {
+    console.log('setDisplayName called with:', name);
+    
+    try {
+      // まずSupabaseのユーザー情報を更新
+      const updatedUser = await authRepository.updateUserDisplayName(name);
+      console.log('Updated user received:', updatedUser);
+      if (updatedUser && currentUserStore.currentUser) {
+        currentUserStore.updateUser(updatedUser);
+        console.log('User store updated');
+        
+        // ユーザーが作成した全ノートの作者名も更新
+        try {
+          await noteRepository.updateCreatorNameByUserId(currentUserStore.currentUser.id, name);
+          console.log('Creator names updated successfully');
+        } catch (noteUpdateError) {
+          console.error('Failed to update creator names in notes:', noteUpdateError);
+          // ノート更新に失敗してもユーザー情報の更新は成功したのでエラーは投げない
+        }
+        
+        // Supabase更新成功後にローカル設定を更新
+        updateSettings({ displayName: name });
+        console.log('Settings updated with displayName:', name);
+      }
+    } catch (error) {
+      console.error('Failed to update user display name:', error);
+      
+      // セッション切れの場合、セッション更新を試行
+      if (error instanceof Error && error.message === 'SESSION_EXPIRED') {
+        try {
+          console.log('Attempting to refresh session...');
+          await authRepository.refreshSession();
+          
+          // セッション更新後、再度表示名更新を試行
+          const updatedUser = await authRepository.updateUserDisplayName(name);
+          if (updatedUser && currentUserStore.currentUser) {
+            currentUserStore.updateUser(updatedUser);
+            
+            // ノートの作者名も更新
+            try {
+              await noteRepository.updateCreatorNameByUserId(currentUserStore.currentUser.id, name);
+              console.log('Creator names updated after session refresh');
+            } catch (noteUpdateError) {
+              console.error('Failed to update creator names after session refresh:', noteUpdateError);
+            }
+            
+            updateSettings({ displayName: name });
+            console.log('Display name updated after session refresh');
+            return; // 成功したのでエラーを投げない
+          }
+        } catch (refreshError) {
+          console.error('Failed to refresh session:', refreshError);
+          // セッション更新も失敗した場合は元のエラーを投げる
+          throw error;
+        }
+      }
+      
+      throw error; // エラーを上位に伝播
+    }
   };
 
   const setBio = (bio: string) => {

@@ -103,6 +103,7 @@ const resources = {
       
       // 設定モーダル
       "settings.title": "設定",
+      "settings.description": "アプリケーションの設定を管理します",
       "settings.general": "一般",
       "settings.account": "アカウント", 
       "settings.appearance": "外観",
@@ -139,6 +140,12 @@ const resources = {
       "settings.displayName.placeholder": "表示名を入力",
       "settings.bio": "バイオ",
       "settings.bio.placeholder": "自己紹介を入力",
+      "settings.displayName.updated": "表示名が更新されました",
+      "settings.displayName.updateError": "表示名の更新に失敗しました",
+      "settings.displayName.sessionExpired": "セッションが切れています。再ログインしてください",
+      "settings.displayName.noSession": "ログインが必要です",
+      "settings.displayName.sessionRefreshed": "セッションを更新して表示名を変更しました",
+      "settings.displayName.notesUpdated": "表示名とノート作者名が更新されました",
       
       // 危険な操作
       "settings.dangerZone": "危険な操作",
@@ -262,6 +269,7 @@ const resources = {
       
       // 設定モーダル
       "settings.title": "Settings",
+      "settings.description": "Manage your application settings",
       "settings.general": "General",
       "settings.account": "Account",
       "settings.appearance": "Appearance", 
@@ -299,6 +307,12 @@ const resources = {
       "settings.displayName.placeholder": "Enter display name",
       "settings.bio": "Bio",
       "settings.bio.placeholder": "Enter bio",
+      "settings.displayName.updated": "Display name updated successfully",
+      "settings.displayName.updateError": "Failed to update display name",
+      "settings.displayName.sessionExpired": "Session expired. Please log in again",
+      "settings.displayName.noSession": "Please log in to continue",
+      "settings.displayName.sessionRefreshed": "Session refreshed and display name updated",
+      "settings.displayName.notesUpdated": "Display name and note creator names updated successfully",
       
       // 危険な操作
       "settings.dangerZone": "Danger Zone",

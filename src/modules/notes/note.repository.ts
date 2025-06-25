@@ -334,4 +334,23 @@ export const noteRepository = {
       
       return null;
     },
+
+    // ユーザーが作成した全ノートの作者名を更新
+    async updateCreatorNameByUserId(userId: string, newCreatorName: string) {
+      console.log('Updating creator name for user:', userId, 'to:', newCreatorName);
+      
+      const { data, error } = await supabase
+        .from('notes')
+        .update({ creator_name: newCreatorName })
+        .eq('user_id', userId)
+        .select();
+      
+      if (error != null) {
+        console.error('Error updating creator names:', error);
+        throw new Error(error.message);
+      }
+      
+      console.log('Successfully updated creator name for', data?.length || 0, 'notes');
+      return data;
+    },
 };
