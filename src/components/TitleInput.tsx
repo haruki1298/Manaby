@@ -1,5 +1,6 @@
 import { Note } from '@/modules/notes/note.entity';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import TextAreaAutoSize from 'react-textarea-autosize';
 
 interface TitleInputProps {
@@ -9,7 +10,8 @@ interface TitleInputProps {
 }
 
 export function TitleInput({ initialData, onTitleChange, readOnly = false }: TitleInputProps) {
-  const [value, setValue] = useState(initialData.title ?? "無題");
+  const { t } = useTranslation();
+  const [value, setValue] = useState(initialData.title ?? t('notes.title.placeholder'));
 
   const handleTnputChange = (value: string) => {
     if (readOnly) return;

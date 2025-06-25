@@ -6,6 +6,8 @@ import { noteRepository } from '@/modules/notes/note.repository';
 import { Note } from '@/modules/notes/note.entity';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { FileText } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface NoteListProps {
   layer?: number;
@@ -13,6 +15,7 @@ interface NoteListProps {
 }
 
 export function NoteList({ layer = 0, parentId }: NoteListProps) {
+  const { t } = useTranslation();
   const params = useParams();
   const id = params.id != null ? parseInt(params.id) : undefined;
   const navigate = useNavigate();
@@ -56,20 +59,29 @@ export function NoteList({ layer = 0, parentId }: NoteListProps) {
 
   return (
     <>
-      <p
+      <div
         className={cn(
-          `hidden text-sm font-medium text-muted-foreground/80`,
-          layer === 0 && 'hidden'
+          'flex items-center justify-center py-8 px-4',
+          layer === 0 && 'hidden',
+          notes.filter((note) => note.parent_document == parentId).length > 0 && 'hidden'
         )}
         style={{ paddingLeft: layer ? `${layer * 12 + 25}px` : undefined }}
       >
-        ページがありません
-      </p>
+        <div className="text-center">
+          <FileText className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+            {t('notes.noNotes')}
+          </p>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+            {t('notes.noNotesDescription')}
+          </p>
+        </div>
+      </div>
       {notes
       .filter((note) => note.parent_document == parentId)
       .map((note) => {
         return (
-          <div key={note.id}>
+          <div key={note.id} className="transition-all duration-200">
             <NoteItem 
               note= {note} 
               layer={layer}
@@ -81,7 +93,9 @@ export function NoteList({ layer = 0, parentId }: NoteListProps) {
               onDelete={(e) => deleteNote(e, note.id)}
               />
               {expanded.get(note.id) && (
-                <NoteList layer={layer + 1} parentId={note.id} />
+                <div className="transition-all duration-300 ease-in-out">
+                  <NoteList layer={layer + 1} parentId={note.id} />
+                </div>
               )}
           </div>
         );

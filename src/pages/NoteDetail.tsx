@@ -7,8 +7,10 @@ import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const NoteDetail = () => {
+  const { t } = useTranslation();
   const params = useParams();  const id = parseInt(params.id!);
   const [isLoading, setIsLoading] = useState(false);
   const { currentUser } = useCurrentUserStore();  const noteStore = useNoteStore();
@@ -137,7 +139,7 @@ const NoteDetail = () => {
             {activeUsers.length > 0 && (
               <div className="flex items-center gap-1 text-sm text-gray-600">
                 <Users className="h-4 w-4" />
-                <span>{activeUsers.length}人が編集中</span>
+                <span>{activeUsers.length}{t('notes.editing')}</span>
               </div>
             )}
           </div>
@@ -156,7 +158,7 @@ const NoteDetail = () => {
 
         {!canEdit && (
           <div className="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm">
-            このノートは閲覧専用です。編集権限がありません。
+            {t('notes.readOnly')}
           </div>
         )}
       </div>

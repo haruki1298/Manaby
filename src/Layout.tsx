@@ -58,12 +58,14 @@ const Layout = () => {
   if (currentUser == null) return <Navigate replace to="signin" />;
 
   return (
-    <div className="h-full flex">
+    <div className="h-full flex bg-neutral-50 dark:bg-neutral-900">
       {!isLoading && (
         <SideBar onSearchButtonClicked={() => setIsShowModel(true)} />
         )}
-      <main className="flex-1 h-full overflow-y-auto">
-        <Outlet />
+      <main className="flex-1 h-full overflow-y-auto bg-white dark:bg-neutral-900">
+        <div className="max-w-4xl mx-auto">
+          <Outlet />
+        </div>
         <SearchModal
           isOpen={isShowModel}
           notes={searchResult}

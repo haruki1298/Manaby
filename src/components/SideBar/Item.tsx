@@ -21,18 +21,21 @@ export function Item({
   return (
     <div
       className={cn(
-        'group min-h-[27px] text-sm py-1 pr-3 w-full flex items-center text-muted-foreground font-medium',
-        isActive && 'bg-neutral-200'
+        'group min-h-[32px] text-sm py-2 pr-3 w-full flex items-center text-neutral-700 dark:text-neutral-300 font-medium transition-all duration-150',
+        'hover:text-neutral-900 dark:hover:text-neutral-100',
+        isActive && 'text-neutral-900 dark:text-neutral-100'
       )}
       onClick={onClick}
       role="button"
-      style={{ paddingLeft: '12px' }}
+      style={{ paddingLeft: '8px' }}
     >
-      <Icon
+      <div 
+        className="shrink-0 w-6 h-6 mr-2 flex items-center justify-center rounded-sm hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors duration-150"
         onClick={onIconClick}
-        className="shrink-0 w-[18px] h-[18px] mr-2 text-muted-foreground"
-      />
-      <span className="truncate">{label}</span>
+      >
+        <Icon className="w-4 h-4 text-muted-foreground group-hover:text-neutral-600 dark:group-hover:text-neutral-400" />
+      </div>
+      <span className="truncate flex-1 select-none">{label}</span>
       {trailingItem}
     </div>
   );

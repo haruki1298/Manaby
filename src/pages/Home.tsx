@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Note } from '@/modules/notes/note.entity';
 import { supabase } from '@/lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 type NoteWithCreator = Note & {
   creator_name?: string;
@@ -15,6 +16,7 @@ type NoteWithCreator = Note & {
 type SortKey = 'created_at' | 'views';
 
 export function Home() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const { currentUser } = useCurrentUserStore();
@@ -111,7 +113,7 @@ export function Home() {
       navigate(`/notes/${newNote.id}`);
     } catch (error) {
       console.error('Failed to create note:', error);
-      alert('ノートの作成に失敗しました。');
+      alert(t('home.createError'));
     }  };
 
   // ノート一覧取得（例: jotaiストアから）
@@ -187,7 +189,7 @@ export function Home() {
     <Card className="border-0 shadow-none w-1/2 m-auto">
       <CardHeader className="px-4 pb-3">
         <CardTitle className="text-lg font-medium">
-          新しいノートを作成してみましょう
+          {t('home.description')}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4">
@@ -195,7 +197,7 @@ export function Home() {
         <div className="flex gap-2 mb-4">
           <input
             className="h-9 flex-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
-            placeholder="ノートのタイトルを入力"
+            placeholder={t('home.placeholder.title')}
             type="text"
             onChange={(e) => setTitle(e.target.value)}
             value={title}
@@ -207,20 +209,20 @@ export function Home() {
             disabled={!title.trim()}
           >
             <Plus className="h-4 w-4" />
-            <span className="ml-1">ノート作成</span>
+            <span className="ml-1">{t('home.createNote')}</span>
           </button>
         </div>
 
         {/* 未公開ノート */}
         <div className="flex gap-2 mb-2 items-center">
-          <span className="font-bold text-primary-300">未公開ノート</span>
+          <span className="font-bold text-primary-300">{t('home.privateNotes')}</span>
           <select
             className="border rounded px-2 py-1 text-sm"
             value={privateSortKey}
             onChange={(e) => setPrivateSortKey(e.target.value as SortKey)}
           >
-            <option value="created_at">作成日</option>
-            <option value="views">閲覧数</option>
+            <option value="created_at">{t('home.sortBy.createdAt')}</option>
+            <option value="views">{t('home.sortBy.views')}</option>
           </select>
           <button
             className="border rounded px-2 py-1 text-sm"
@@ -228,7 +230,7 @@ export function Home() {
               setPrivateSortOrder((order) => (order === 'asc' ? 'desc' : 'asc'))
             }
           >
-            {privateSortOrder === 'asc' ? '昇順' : '降順'}
+            {privateSortOrder === 'asc' ? t('home.sortOrder.asc') : t('home.sortOrder.desc')}
           </button>
         </div>
         <ul>
@@ -237,7 +239,7 @@ export function Home() {
             privateSortKey,
             privateSortOrder,
           ).length === 0 ? (
-            <li className="text-gray-400 italic py-2">ノートがないです</li>
+            <li className="text-gray-400 italic py-2">{t('home.noNotes')}</li>
           ) : (
             getSortedNotes(
               notes.filter((note) => !note.is_public),
@@ -248,13 +250,13 @@ export function Home() {
                 key={note.id}
                 className="flex items-center justify-between py-2 border-b"
               >
-                <span>{note.title ?? '無題'}</span>
+                <span>{note.title ?? t('notes.untitled')}</span>
                 <div>
                   <button
                     className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
                     onClick={() => navigate(`/notes/${note.id}`)}
                   >
-                    編集
+                    {t('home.actions.edit')}
                   </button>
                   <button
                     className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
@@ -264,7 +266,7 @@ export function Home() {
                     }}
                     disabled={note.is_public ?? false}
                   >
-                    {note.is_public ? '公開中' : '公開'}
+                    {note.is_public ? t('home.actions.published') : t('home.actions.publish')}
                   </button>
                   <button
                     className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
@@ -273,7 +275,7 @@ export function Home() {
                       noteStore.delete(note.id);
                     }}
                   >
-                    削除
+                    {t('home.actions.delete')}
                   </button>
                 </div>
               </li>
@@ -283,14 +285,14 @@ export function Home() {
 
         {/* 公開ノート */}
         <div className="flex gap-2 mt-8 mb-2 items-center">
-          <span className="font-bold">公開ノート</span>
+          <span className="font-bold">{t('home.publicNotes')}</span>
           <select
             className="border rounded px-2 py-1 text-sm"
             value={publicSortKey}
             onChange={(e) => setPublicSortKey(e.target.value as SortKey)}
           >
-            <option value="created_at">作成日</option>
-            <option value="views">閲覧数</option>
+            <option value="created_at">{t('home.sortBy.createdAt')}</option>
+            <option value="views">{t('home.sortBy.views')}</option>
           </select>
           <button
             className="border rounded px-2 py-1 text-sm"
@@ -298,13 +300,13 @@ export function Home() {
               setPublicSortOrder((order) => (order === 'asc' ? 'desc' : 'asc'))
             }
           >
-            {publicSortOrder === 'asc' ? '昇順' : '降順'}
+            {publicSortOrder === 'asc' ? t('home.sortOrder.asc') : t('home.sortOrder.desc')}
           </button>
         </div>
         <ul>
           {getSortedNotes(publicNotes, publicSortKey, publicSortOrder).length ===
           0 ? (
-            <li className="text-gray-400 italic py-2">ノートがありません</li>
+            <li className="text-gray-400 italic py-2">{t('home.noPublicNotes')}</li>
           ) : (
             getSortedNotes(
               publicNotes,
@@ -317,18 +319,21 @@ export function Home() {
               >
                 <div>
                   <span className="block">
-                    {note.title ?? '無題'}
+                    {note.title ?? t('notes.untitled')}
                     <button
                       className="ml-2 p-1 rounded bg-transparent hover:bg-gray-200 transition"
                       onClick={() => toggleFavorite(note.id)}
-                      aria-label="お気に入り"
+                      aria-label={t('home.actions.favorite')}
                     >
                       {favoriteNoteIds.includes(note.id) ? (
                         <Star className="inline h-4 w-4 text-yellow-400" />
                       ) : (
                         <StarOff className="inline h-4 w-4 text-gray-400" />
-                      )}                    </button>                  </span>                  <span className="block text-xs text-gray-400 mt-1">
-                    作成者: {note.creator_name || 'Unknown User'}
+                      )}
+                    </button>
+                  </span>
+                  <span className="block text-xs text-gray-400 mt-1">
+                    {t('notes.creator')}: {note.creator_name || 'Unknown User'}
                   </span>
                 </div>
                 <div>
@@ -338,19 +343,19 @@ export function Home() {
                         className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
                         onClick={() => navigate(`/notes/${note.id}`)}
                       >
-                        編集
+                        {t('home.actions.edit')}
                       </button>
                       <button
                         className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
                         onClick={() => handleDeletePublicNote(note.id)}
                       >
-                        非表示
+                        {t('notes.hide')}
                       </button>
                       <button
                         className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
                         onClick={() => navigate(`/public/${note.id}`)}
                       >
-                        閲覧
+                        {t('notes.view')}
                       </button>
                     </>
                   ) : (
@@ -358,7 +363,7 @@ export function Home() {
                       className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
                       onClick={() => navigate(`/public/${note.id}`)}
                     >
-                      閲覧
+                      {t('notes.view')}
                     </button>
                   )}
                 </div>
@@ -368,12 +373,13 @@ export function Home() {
         </ul>
 
         {/* お気に入りノート一覧 */}
-        <h3 className="mt-8 mb-2 font-bold">お気に入り</h3>
-        <ul>          {favoriteNoteIds
+        <h3 className="mt-8 mb-2 font-bold">{t('home.favoriteNotes')}</h3>
+        <ul>
+          {favoriteNoteIds
             .map((id) => publicNotes.find((note) => note.id === id))
             .filter((note): note is NoteWithCreator => !!note).length === 0 ? (
             <li className="text-gray-400 italic py-2">
-              お気に入りがありません
+              {t('home.noFavorites')}
             </li>          ) : (            favoriteNoteIds
               .map((id) => publicNotes.find((note) => note.id === id))
               .filter((note): note is NoteWithCreator => !!note)
@@ -382,8 +388,10 @@ export function Home() {
                   key={note.id}
                   className="flex items-center justify-between py-2 border-b"
                 >
-                  <div>                    <span className="block">{note.title ?? '無題'}</span>                    <span className="block text-xs text-gray-400 mt-1">
-                      作成者: {note.creator_name || 'Unknown User'}
+                  <div>
+                    <span className="block">{note.title ?? t('notes.untitled')}</span>
+                    <span className="block text-xs text-gray-400 mt-1">
+                      {t('notes.creator')}: {note.creator_name || 'Unknown User'}
                     </span>
                   </div>
                   <div>
@@ -391,12 +399,12 @@ export function Home() {
                       className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
                       onClick={() => navigate(`/public/${note.id}`)}
                     >
-                      閲覧
+                      {t('notes.view')}
                     </button>
                     <button
                       className="ml-2 p-1 rounded bg-transparent hover:bg-gray-200 transition"
                       onClick={() => toggleFavorite(note.id)}
-                      aria-label="お気に入り解除"
+                      aria-label={t('home.actions.unfavorite')}
                     >
                       <Star className="inline h-4 w-4 text-yellow-400" />
                     </button>

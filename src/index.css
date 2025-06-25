@@ -6,10 +6,12 @@ html,
 body,
 #root {
   height: 100%;
+  font-size: var(--font-size-base, 14px);
 }
 
 @layer base {
   :root {
+    --font-size-base: 14px;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
     --background: 0 0% 100%;
