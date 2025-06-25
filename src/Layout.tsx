@@ -15,10 +15,21 @@ const Layout = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isShowModel, setIsShowModel] = useState(false);
   const [searchResult, setSearchResult] = useState<Note[]>([]);
+  const [sidebarWidth, setSidebarWidth] = useState(240); // デフォルト幅
 
   useEffect(() => {
     fetchNotes();
     const channel = subscribeNote();
+    
+    // サイドバー幅を復元
+    const savedWidth = localStorage.getItem('sidebar-width');
+    if (savedWidth) {
+      const width = parseInt(savedWidth, 10);
+      if (width >= 200 && width <= 400) {
+        setSidebarWidth(width);
+      }
+    }
+    
     return () => {
       unsubscribe(channel!);
     };
@@ -55,14 +66,27 @@ const Layout = () => {
     setIsShowModel(false);
   }
 
+  const handleSidebarWidthChange = (width: number) => {
+    setSidebarWidth(width);
+  };
+
   if (currentUser == null) return <Navigate replace to="signin" />;
 
   return (
     <div className="h-full flex bg-neutral-50 dark:bg-neutral-900">
       {!isLoading && (
-        <SideBar onSearchButtonClicked={() => setIsShowModel(true)} />
+        <SideBar 
+          onSearchButtonClicked={() => setIsShowModel(true)} 
+          onWidthChange={handleSidebarWidthChange}
+        />
         )}
-      <main className="flex-1 h-full overflow-y-auto bg-white dark:bg-neutral-900">
+      <main 
+        className="h-full overflow-y-auto bg-white dark:bg-neutral-900 transition-all duration-150"
+        style={{ 
+          marginLeft: `${sidebarWidth}px`,
+          width: `calc(100% - ${sidebarWidth}px)`
+        }}
+      >
         <div className="max-w-4xl mx-auto">
           <Outlet />
         </div>

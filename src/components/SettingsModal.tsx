@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Settings, User, Moon, Sun, Bell, Shield, Palette } from 'lucide-react';
+import { Settings, User, Moon, Sun, Shield, Palette } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/modules/settings/settings.state.tsx';
@@ -23,8 +23,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setDefaultLanguage,
     setTheme,
     setFontSize,
-    setDesktopNotifications,
-    setEmailNotifications,
     setDefaultNoteVisibility,
     setDisplayName,
     setBio,
@@ -35,7 +33,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     { id: 'general', label: t('settings.general'), icon: Settings },
     { id: 'account', label: t('settings.account'), icon: User },
     { id: 'appearance', label: t('settings.appearance'), icon: Palette },
-    { id: 'notifications', label: t('settings.notifications'), icon: Bell },
     { id: 'privacy', label: t('settings.privacy'), icon: Shield },
   ];
 
@@ -196,50 +193,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <span>{t('settings.fontSize.small')}</span>
                     <span>{t('settings.fontSize.large')}</span>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case 'notifications':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
-                {t('settings.notifications.title')}
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                      {t('settings.desktopNotifications')}
-                    </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      {t('settings.desktopNotifications.description')}
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.desktopNotifications}
-                    onChange={(e) => setDesktopNotifications(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                  />
-                </div>
-                <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                      {t('settings.emailNotifications')}
-                    </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      {t('settings.emailNotifications.description')}
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.emailNotifications}
-                    onChange={(e) => setEmailNotifications(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                  />
                 </div>
               </div>
             </div>

@@ -8,8 +8,6 @@ interface SettingsState {
   defaultLanguage: string;
   theme: Theme;
   fontSize: number;
-  desktopNotifications: boolean;
-  emailNotifications: boolean;
   defaultNoteVisibility: 'private' | 'public';
   displayName: string;
   bio: string;
@@ -20,8 +18,6 @@ const defaultSettings: SettingsState = {
   defaultLanguage: 'ja',
   theme: 'system',
   fontSize: 14,
-  desktopNotifications: true,
-  emailNotifications: false,
   defaultNoteVisibility: 'private',
   displayName: '',
   bio: '',
@@ -34,8 +30,6 @@ interface SettingsContextType {
   setDefaultLanguage: (language: string) => Promise<void>;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
-  setDesktopNotifications: (enabled: boolean) => void;
-  setEmailNotifications: (enabled: boolean) => void;
   setDefaultNoteVisibility: (visibility: 'private' | 'public') => void;
   setDisplayName: (name: string) => void;
   setBio: (bio: string) => void;
@@ -123,14 +117,6 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     updateSettings({ fontSize: size });
   };
 
-  const setDesktopNotifications = (enabled: boolean) => {
-    updateSettings({ desktopNotifications: enabled });
-  };
-
-  const setEmailNotifications = (enabled: boolean) => {
-    updateSettings({ emailNotifications: enabled });
-  };
-
   const setDefaultNoteVisibility = (visibility: 'private' | 'public') => {
     updateSettings({ defaultNoteVisibility: visibility });
   };
@@ -157,8 +143,6 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     setDefaultLanguage,
     setTheme,
     setFontSize,
-    setDesktopNotifications,
-    setEmailNotifications,
     setDefaultNoteVisibility,
     setDisplayName,
     setBio,

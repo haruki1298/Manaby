@@ -14,6 +14,7 @@ const resources = {
       "sidebar.favorites": "お気に入り",
       "sidebar.archive": "アーカイブ",
       "sidebar.signOut": "サインアウト",
+      "sidebar.resizeTooltip": "ドラッグしてサイドバーの幅を変更",
       
       // ユーザー
       "user.workspace": "のワークスペース",
@@ -105,7 +106,6 @@ const resources = {
       "settings.general": "一般",
       "settings.account": "アカウント", 
       "settings.appearance": "外観",
-      "settings.notifications": "通知",
       "settings.privacy": "プライバシー",
       
       // 一般設定
@@ -124,21 +124,6 @@ const resources = {
       "settings.fontSize": "フォントサイズ",
       "settings.fontSize.small": "小",
       "settings.fontSize.large": "大",
-      
-      // 通知設定
-      "settings.notifications.title": "通知設定",
-      "settings.desktopNotifications": "デスクトップ通知",
-      "settings.desktopNotifications.description": "新しいコメントやメンションの通知を受け取る",
-      "settings.emailNotifications": "メール通知",
-      "settings.emailNotifications.description": "重要な更新をメールで受け取る",
-      
-      // 通知メッセージ
-      "notifications.browserNotSupported": "このブラウザは通知をサポートしていません",
-      "notifications.desktopDisabled": "デスクトップ通知が無効になっています",
-      "notifications.permissionDenied": "通知の許可が拒否されました",
-      "notifications.showError": "通知の表示に失敗しました",
-      "notifications.emailDisabled": "メール通知が無効になっています",
-      "notifications.emailWouldBeSent": "メール通知が送信される予定です",
       
       // プライバシー設定
       "settings.privacy.title": "プライバシー設定",
@@ -188,6 +173,7 @@ const resources = {
       "sidebar.favorites": "Favorites",
       "sidebar.archive": "Archive",
       "sidebar.signOut": "Sign Out",
+      "sidebar.resizeTooltip": "Drag to resize sidebar",
       
       // ユーザー
       "user.workspace": "'s workspace",
@@ -298,21 +284,6 @@ const resources = {
       "settings.fontSize": "Font Size",
       "settings.fontSize.small": "Small",
       "settings.fontSize.large": "Large",
-      
-      // 通知設定
-      "settings.notifications.title": "Notification Settings",
-      "settings.desktopNotifications": "Desktop Notifications",
-      "settings.desktopNotifications.description": "Receive notifications for new comments and mentions",
-      "settings.emailNotifications": "Email Notifications",
-      "settings.emailNotifications.description": "Receive important updates via email",
-      
-      // 通知メッセージ
-      "notifications.browserNotSupported": "This browser does not support notifications",
-      "notifications.desktopDisabled": "Desktop notifications are disabled",
-      "notifications.permissionDenied": "Notification permission denied",
-      "notifications.showError": "Failed to show notification",
-      "notifications.emailDisabled": "Email notifications are disabled",
-      "notifications.emailWouldBeSent": "Email notification would be sent",
       
       // プライバシー設定
       "settings.privacy.title": "Privacy Settings",

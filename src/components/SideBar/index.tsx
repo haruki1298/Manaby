@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState, useRef, useCallback, useEffect } from 'react';
 import { Item } from './Item';
 import { NoteList } from '../NoteList';
 import UserItem from './UserItem';
@@ -9,19 +9,80 @@ import { noteRepository } from '@/modules/notes/note.repository';
 import { Link,useNavigate } from 'react-router-dom';
 import { authRepository } from '@/modules/auth/auath.repository';
 import { SettingsModal } from '../SettingsModal';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
   onSearchButtonClicked: () => void;
+  onWidthChange?: (width: number) => void;
 };
 
-const SideBar: FC<Props> = ({ onSearchButtonClicked }) => {
+const SideBar: FC<Props> = ({ onSearchButtonClicked, onWidthChange }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const currentUserStore = useCurrentUserStore();
   const noteStore = useNoteStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
+  // リサイズ機能の状態
+  const [sidebarWidth, setSidebarWidth] = useState(240); // デフォルト幅
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // リサイズ処理
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsResizing(true);
+    e.preventDefault();
+  }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizing) return;
+    
+    const newWidth = e.clientX;
+    const minWidth = 200;
+    const maxWidth = 400;
+    
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      setSidebarWidth(newWidth);
+    }
+  }, [isResizing]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  // グローバルマウスイベント
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing, handleMouseMove, handleMouseUp]);
+
+  // ローカルストレージに幅を保存
+  useEffect(() => {
+    localStorage.setItem('sidebar-width', sidebarWidth.toString());
+    onWidthChange?.(sidebarWidth);
+  }, [sidebarWidth, onWidthChange]);
+
+  // 初期化時にローカルストレージから幅を復元
+  useEffect(() => {
+    const savedWidth = localStorage.getItem('sidebar-width');
+    if (savedWidth) {
+      const width = parseInt(savedWidth, 10);
+      if (width >= 200 && width <= 400) {
+        setSidebarWidth(width);
+      }
+    }
+  }, []);
 
   const createNote = async () => {
     const newNote = await noteRepository.create(
@@ -44,7 +105,11 @@ const SideBar: FC<Props> = ({ onSearchButtonClicked }) => {
 
   return (
     <>
-      <aside className="group/sidebar h-full bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 overflow-y-auto relative flex flex-col w-60 shadow-sm">
+      <aside 
+        ref={sidebarRef}
+        className="group/sidebar h-full bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 overflow-y-auto fixed left-0 top-0 z-50 flex flex-col shadow-sm"
+        style={{ width: `${sidebarWidth}px` }}
+      >
         <div className="flex flex-col h-full">
           <div className="p-3 border-b border-neutral-200 dark:border-neutral-800">
             <UserItem
@@ -92,14 +157,19 @@ const SideBar: FC<Props> = ({ onSearchButtonClicked }) => {
             </Link>
           </div>
         </div>
+        
+        {/* リサイズハンドル */}
+        <div
+          className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-blue-500 hover:opacity-50 transition-colors duration-150 group-hover/sidebar:opacity-100 opacity-0"
+          onMouseDown={handleMouseDown}
+          title={t('sidebar.resizeTooltip')}
+        />
       </aside>
       
       <SettingsModal 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
       />
-      
-      <div className="absolute top-0 z-[99999] left-60 w-[calc(100%-240px)]"></div>
     </>
   );
 };
