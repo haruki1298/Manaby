@@ -111,12 +111,35 @@ export const noteRepository = {
             permission_param: permission 
           });
 
+        console.log('RPC result:', result, 'error:', error);
+
         if (error) {
           console.error('Invitation error:', error);
+          // Supabase関数が存在しない場合は、直接テーブルに挿入
+          if (error.code === '42883') {
+            console.log('RPC function not found, inserting directly');
+            const { data: directResult, error: directError } = await supabase
+              .from('note_collaborators')
+              .insert({
+                note_id: noteId,
+                user_id: userEmail,
+                permission
+              } as any)
+              .select()
+              .single();
+            
+            if (directError) {
+              console.error('Direct insert error:', directError);
+              throw new Error(`共有に失敗しました: ${directError.message}`);
+            }
+            
+            console.log('Direct insert successful:', directResult);
+            return directResult;
+          }
           throw new Error(`共有に失敗しました: ${error.message}`);
         }
 
-        if (!result.success) {
+        if (result && !result.success) {
           throw new Error(result.error || '共有に失敗しました');
         }
 
@@ -130,14 +153,14 @@ export const noteRepository = {
 
     async addCollaborator(noteId: number, userEmail: string, permission: 'read' | 'write' = 'write') {
       return this.shareNoteByEmail(noteId, userEmail, permission);
-    },
-
-    async getCollaborators(noteId: number) {
+    },    async getCollaborators(noteId: number) {
+      console.log('Getting collaborators for note:', noteId);
       const { data, error } = await supabase
         .from('note_collaborators')
         .select('*')
         .eq('note_id', noteId);
       
+      console.log('Collaborators data:', data, 'error:', error);
       if (error != null) throw new Error(error.message);
       return data;
     },
@@ -163,6 +186,8 @@ export const noteRepository = {
       if (error != null) throw new Error(error.message);
       return data;
     },    async canEditNote(userId: string, noteId: number) {
+      console.log('canEditNote called with:', { userId, noteId });
+      
       // ノートの所有者かどうかチェック
       const { data: note } = await supabase
         .from('notes')
@@ -170,7 +195,11 @@ export const noteRepository = {
         .eq('id', noteId)
         .single();
       
-      if (note?.user_id === userId) return true;
+      console.log('Note owner:', note?.user_id);
+      if (note?.user_id === userId) {
+        console.log('User is note owner');
+        return true;
+      }
       
       // 共同編集者かどうかチェック（UUIDベース）
       const { data: collaborator } = await supabase
@@ -180,10 +209,16 @@ export const noteRepository = {
         .eq('user_id', userId)
         .single();
       
-      if (collaborator?.permission === 'write') return true;
+      console.log('UUID-based collaborator:', collaborator);
+      if (collaborator?.permission === 'write') {
+        console.log('User has write permission via UUID');
+        return true;
+      }
       
       // メールアドレスベースの共同編集者もチェック
       const { data: user } = await supabase.auth.getUser();
+      console.log('Current user email:', user?.user?.email);
+      
       if (user?.user?.email) {
         const { data: emailCollaborator } = await supabase
           .from('note_collaborators')
@@ -192,23 +227,40 @@ export const noteRepository = {
           .eq('user_id', user.user.email)
           .single();
         
-        if (emailCollaborator?.permission === 'write') return true;
+        console.log('Email-based collaborator:', emailCollaborator);
+        if (emailCollaborator?.permission === 'write') {
+          console.log('User has write permission via email');
+          return true;
+        }
       }
       
+      console.log('User has no edit permissions');
       return false;
-    },// リアルタイム編集セッション管理
+    },    // リアルタイム編集セッション管理
     async createEditSession(noteId: number, userId: string) {
-      const { data, error } = await (supabase as any)
-        .from('note_edit_sessions')
-        .insert({
-          note_id: noteId,
-          user_id: userId
-        })
-        .select()
-        .single();
+      console.log('Creating edit session for:', { noteId, userId });
       
-      if (error != null) throw new Error(error.message);
-      return data;
+      try {
+        const { data, error } = await (supabase as any)
+          .from('note_edit_sessions')
+          .insert({
+            note_id: noteId,
+            user_id: userId
+          })
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Edit session creation error:', error);
+          throw new Error(`編集セッション作成エラー: ${error.message}`);
+        }
+        
+        console.log('Edit session created successfully:', data);
+        return data;
+      } catch (err) {
+        console.error('Failed to create edit session:', err);
+        throw err;
+      }
     },
 
     async updateEditSession(sessionId: string, cursorPosition: number, selectionStart?: number, selectionEnd?: number) {

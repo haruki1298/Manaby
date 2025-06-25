@@ -49,21 +49,26 @@ const NoteDetail = () => {
       setIsLoading(false);
     }
   };
-
   const initializeCollaborativeEditing = async () => {
     if (!currentUser) return;
 
+    console.log('Checking edit permissions for user:', currentUser.id, 'note:', id);
+    
     // 編集権限をチェック
     const canEditNote = await noteRepository.canEditNote(currentUser.id, id);
-    setCanEdit(canEditNote);
-
-    // 編集セッションを作成
+    console.log('Can edit note:', canEditNote);
+    setCanEdit(canEditNote);    // 編集セッションを作成
     if (canEditNote) {
       try {
-        const session = await noteRepository.createEditSession(id, currentUser.id);
+        // ユーザーIDを文字列として渡す（メールアドレスの場合もあるため）
+        const userIdForSession = currentUser.email || currentUser.id;
+        const session = await noteRepository.createEditSession(id, userIdForSession);
         setEditSessionId(session.id);
       } catch (error) {
         console.error('Failed to create edit session:', error);
+        // 編集セッション作成に失敗してもノート編集は続行
+        // 一時的に空の編集セッションIDを設定
+        setEditSessionId('temp-session-' + Date.now());
       }
     }
 
