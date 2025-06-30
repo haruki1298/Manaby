@@ -29,7 +29,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setFontSize,
     setDefaultNoteVisibility,
     setDisplayName,
-    setBio,
     resetSettings,
   } = useSettings();
 
@@ -177,18 +176,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                           {nameUpdateMessage}
                         </p>
                       )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                        {t('settings.bio')}
-                      </label>
-                      <textarea
-                        value={settings.bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        placeholder={t('settings.bio.placeholder')}
-                        rows={3}
-                        className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
-                      />
                     </div>
                   </div>
                 </div>

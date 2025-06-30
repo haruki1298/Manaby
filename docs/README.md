@@ -145,7 +145,6 @@ interface SettingsState {
   emailNotifications: boolean;                // メール通知
   defaultNoteVisibility: 'private' | 'public'; // ノート公開設定
   displayName: string;                        // 表示名
-  bio: string;                               // バイオ
 }
 ```
 
