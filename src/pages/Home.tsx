@@ -13,8 +13,6 @@ type NoteWithCreator = Note & {
   creator_name?: string;
 };
 
-type SortKey = 'created_at' | 'views';
-
 export function Home() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -26,14 +24,7 @@ export function Home() {
   const [publicNotes, setPublicNotes] = useState<NoteWithCreator[]>([]);
 
   // お気に入りノートIDの配列
-  const [favoriteNoteIds, setFavoriteNoteIds] = useState<number[]>([]);
-
-  // 未公開ノート用
-  const [privateSortKey, setPrivateSortKey] = useState<SortKey>('created_at');
-  const [privateSortOrder, setPrivateSortOrder] = useState<'asc' | 'desc'>('desc');
-  // 公開ノート用
-  const [publicSortKey, setPublicSortKey] = useState<SortKey>('created_at');
-  const [publicSortOrder, setPublicSortOrder] = useState<'asc' | 'desc'>('desc');  useEffect(() => {
+  const [favoriteNoteIds, setFavoriteNoteIds] = useState<number[]>([]);  useEffect(() => {
     fetchPublicNotes();
     
     // Supabaseのリアルタイム機能で公開ノートの変更を監視
@@ -152,25 +143,177 @@ export function Home() {
       : [...favoriteNoteIds, noteId];
     saveFavorites(updated);
   };
-  // 並び替え関数
-  const getSortedNotes = <T extends Note>(
-    notes: T[],
-    sortKey: SortKey,
-    sortOrder: 'asc' | 'desc',
-  ): T[] => {
-    return [...notes].sort((a, b) => {
-      if (sortKey === 'created_at') {
-        const aTime = new Date(a.created_at).getTime();
-        const bTime = new Date(b.created_at).getTime();
-        return sortOrder === 'asc' ? aTime - bTime : bTime - aTime;
-      } else if (sortKey === 'views') {
-        const aViews = Number(a.views ?? 0);
-        const bViews = Number(b.views ?? 0);
-        return sortOrder === 'asc' ? aViews - bViews : bViews - aViews;
-      }
-      return 0;
-    });
+
+  // ノート一覧を表示する関数
+  const renderNoteList = () => {
+    return (
+      <div className="space-y-8">
+        {/* 未公開ノート */}
+        <div>
+          <span className="font-bold text-primary-300">{t('home.privateNotes')}</span>
+          <ul className="mt-2">
+            {notes.filter((note) => !note.is_public).length === 0 ? (
+              <li className="text-gray-400 italic py-2">{t('home.noNotes')}</li>
+            ) : (
+              notes.filter((note) => !note.is_public).map((note) => (
+                <li
+                  key={note.id}
+                  className="flex items-center justify-between py-2 border-b"
+                >
+                  <span>{note.title ?? t('notes.untitled')}</span>
+                  <div>
+                    <button
+                      className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+                      onClick={() => navigate(`/notes/${note.id}`)}
+                    >
+                      {t('home.actions.edit')}
+                    </button>
+                    <button
+                      className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
+                      onClick={async () => {
+                        await noteRepository.setPublic(note.id, true);
+                        fetchPublicNotes();
+                      }}
+                      disabled={note.is_public ?? false}
+                    >
+                      {note.is_public ? t('home.actions.published') : t('home.actions.publish')}
+                    </button>
+                    <button
+                      className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
+                      onClick={async () => {
+                        await noteRepository.delete(note.id);
+                        noteStore.delete(note.id);
+                      }}
+                    >
+                      {t('home.actions.delete')}
+                    </button>
+                  </div>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+
+        {/* 公開ノート */}
+        <div>
+          <span className="font-bold">{t('home.publicNotes')}</span>
+          <ul className="mt-2">
+            {publicNotes.length === 0 ? (
+              <li className="text-gray-400 italic py-2">{t('home.noPublicNotes')}</li>
+            ) : (
+              publicNotes.map((note) => (
+                <li
+                  key={note.id}
+                  className="flex items-center justify-between py-2 border-b text-500"
+                >
+                  <div>
+                    <span className="block flex items-center">
+                      <button
+                        className="mr-2 p-1 rounded bg-transparent hover:bg-gray-200 transition"
+                        onClick={() => toggleFavorite(note.id)}
+                        aria-label={t('home.actions.favorite')}
+                      >
+                        {favoriteNoteIds.includes(note.id) ? (
+                          <Star className="inline h-4 w-4 text-yellow-400" />
+                        ) : (
+                          <StarOff className="inline h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                      {note.title ?? t('notes.untitled')}
+                    </span>
+                    <span className="block text-xs text-gray-400 mt-1">
+                      {t('notes.creator')}: {note.creator_name || 'Unknown User'}
+                    </span>
+                  </div>
+                  <div>
+                    {note.user_id === currentUser?.id ? (
+                      <>
+                        <button
+                          className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
+                          onClick={() => navigate(`/notes/${note.id}`)}
+                        >
+                          {t('home.actions.edit')}
+                        </button>
+                        <button
+                          className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
+                          onClick={() => handleDeletePublicNote(note.id)}
+                        >
+                          {t('notes.hide')}
+                        </button>
+                        <button
+                          className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+                          onClick={() => navigate(`/public/${note.id}`)}
+                        >
+                          {t('notes.view')}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+                        onClick={() => navigate(`/public/${note.id}`)}
+                      >
+                        {t('notes.view')}
+                      </button>
+                    )}
+                  </div>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+
+        {/* お気に入りノート */}
+        <div>
+          <h3 className="mb-2 font-bold">{t('home.favoriteNotes')}</h3>
+          <ul>
+            {favoriteNoteIds
+              .map((id) => publicNotes.find((note) => note.id === id))
+              .filter((note): note is NoteWithCreator => !!note).length === 0 ? (
+              <li className="text-gray-400 italic py-2">
+                {t('home.noFavorites')}
+              </li>              
+            ) : (                
+              favoriteNoteIds
+                .map((id) => publicNotes.find((note) => note.id === id))
+                .filter((note): note is NoteWithCreator => !!note)
+                .map((note) => (
+                  <li
+                    key={note.id}
+                    className="flex items-center justify-between py-2 border-b"
+                  >
+                    <div>
+                      <span className="block flex items-center">
+                        <button
+                          className="mr-2 p-1 rounded bg-transparent hover:bg-gray-200 transition"
+                          onClick={() => toggleFavorite(note.id)}
+                          aria-label={t('home.actions.unfavorite')}
+                        >
+                          <Star className="inline h-4 w-4 text-yellow-400" />
+                        </button>
+                        {note.title ?? t('notes.untitled')}
+                      </span>
+                      <span className="block text-xs text-gray-400 mt-1">
+                        {t('notes.creator')}: {note.creator_name || 'Unknown User'}
+                      </span>
+                    </div>
+                    <div>
+                      <button
+                        className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
+                        onClick={() => navigate(`/public/${note.id}`)}
+                      >
+                        {t('notes.view')}
+                      </button>
+                    </div>
+                  </li>
+                ))
+            )}
+          </ul>
+        </div>
+      </div>
+    );
   };
+
+
 
   // ページフォーカス時の更新
   useEffect(() => {
@@ -188,7 +331,7 @@ export function Home() {
   return (
     <Card className="border-0 shadow-none w-1/2 m-auto">
       <CardHeader className="px-4 pb-3">
-        <CardTitle className="text-lg font-medium">
+        <CardTitle className="text-lg font-medium text-improved">
           {t('home.description')}
         </CardTitle>
       </CardHeader>
@@ -196,7 +339,7 @@ export function Home() {
         {/* ノート作成フォーム */}
         <div className="flex gap-2 mb-4">
           <input
-            className="h-9 flex-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
+            className="input-white-bg h-9 flex-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
             placeholder={t('home.placeholder.title')}
             type="text"
             onChange={(e) => setTitle(e.target.value)}
@@ -213,206 +356,12 @@ export function Home() {
           </button>
         </div>
 
-        {/* 未公開ノート */}
-        <div className="flex gap-2 mb-2 items-center">
-          <span className="font-bold text-primary-300">{t('home.privateNotes')}</span>
-          <select
-            className="border rounded px-2 py-1 text-sm"
-            value={privateSortKey}
-            onChange={(e) => setPrivateSortKey(e.target.value as SortKey)}
-          >
-            <option value="created_at">{t('home.sortBy.createdAt')}</option>
-            <option value="views">{t('home.sortBy.views')}</option>
-          </select>
-          <button
-            className="border rounded px-2 py-1 text-sm"
-            onClick={() =>
-              setPrivateSortOrder((order) => (order === 'asc' ? 'desc' : 'asc'))
-            }
-          >
-            {privateSortOrder === 'asc' ? t('home.sortOrder.asc') : t('home.sortOrder.desc')}
-          </button>
+        {/* カテゴリ順序管理 */}
+        
+        {/* ノート一覧の表示 */}
+        <div>
+          {renderNoteList()}
         </div>
-        <ul>
-          {getSortedNotes(
-            notes.filter((note) => !note.is_public),
-            privateSortKey,
-            privateSortOrder,
-          ).length === 0 ? (
-            <li className="text-gray-400 italic py-2">{t('home.noNotes')}</li>
-          ) : (
-            getSortedNotes(
-              notes.filter((note) => !note.is_public),
-              privateSortKey,
-              privateSortOrder,
-            ).map((note) => (
-              <li
-                key={note.id}
-                className="flex items-center justify-between py-2 border-b"
-              >
-                <span>{note.title ?? t('notes.untitled')}</span>
-                <div>
-                  <button
-                    className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
-                    onClick={() => navigate(`/notes/${note.id}`)}
-                  >
-                    {t('home.actions.edit')}
-                  </button>
-                  <button
-                    className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
-                    onClick={async () => {
-                      await noteRepository.setPublic(note.id, true);
-                      fetchPublicNotes();
-                    }}
-                    disabled={note.is_public ?? false}
-                  >
-                    {note.is_public ? t('home.actions.published') : t('home.actions.publish')}
-                  </button>
-                  <button
-                    className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
-                    onClick={async () => {
-                      await noteRepository.delete(note.id);
-                      noteStore.delete(note.id);
-                    }}
-                  >
-                    {t('home.actions.delete')}
-                  </button>
-                </div>
-              </li>
-            ))
-          )}
-        </ul>
-
-        {/* 公開ノート */}
-        <div className="flex gap-2 mt-8 mb-2 items-center">
-          <span className="font-bold">{t('home.publicNotes')}</span>
-          <select
-            className="border rounded px-2 py-1 text-sm"
-            value={publicSortKey}
-            onChange={(e) => setPublicSortKey(e.target.value as SortKey)}
-          >
-            <option value="created_at">{t('home.sortBy.createdAt')}</option>
-            <option value="views">{t('home.sortBy.views')}</option>
-          </select>
-          <button
-            className="border rounded px-2 py-1 text-sm"
-            onClick={() =>
-              setPublicSortOrder((order) => (order === 'asc' ? 'desc' : 'asc'))
-            }
-          >
-            {publicSortOrder === 'asc' ? t('home.sortOrder.asc') : t('home.sortOrder.desc')}
-          </button>
-        </div>
-        <ul>
-          {getSortedNotes(publicNotes, publicSortKey, publicSortOrder).length ===
-          0 ? (
-            <li className="text-gray-400 italic py-2">{t('home.noPublicNotes')}</li>
-          ) : (
-            getSortedNotes(
-              publicNotes,
-              publicSortKey,
-              publicSortOrder,
-            ).map((note) => (
-              <li
-                key={note.id}
-                className="flex items-center justify-between py-2 border-b text-500"
-              >
-                <div>
-                  <span className="block">
-                    {note.title ?? t('notes.untitled')}
-                    <button
-                      className="ml-2 p-1 rounded bg-transparent hover:bg-gray-200 transition"
-                      onClick={() => toggleFavorite(note.id)}
-                      aria-label={t('home.actions.favorite')}
-                    >
-                      {favoriteNoteIds.includes(note.id) ? (
-                        <Star className="inline h-4 w-4 text-yellow-400" />
-                      ) : (
-                        <StarOff className="inline h-4 w-4 text-gray-400" />
-                      )}
-                    </button>
-                  </span>
-                  <span className="block text-xs text-gray-400 mt-1">
-                    {t('notes.creator')}: {note.creator_name || 'Unknown User'}
-                  </span>
-                </div>
-                <div>
-                  {note.user_id === currentUser?.id ? (
-                    <>
-                      <button
-                        className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
-                        onClick={() => navigate(`/notes/${note.id}`)}
-                      >
-                        {t('home.actions.edit')}
-                      </button>
-                      <button
-                        className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded"
-                        onClick={() => handleDeletePublicNote(note.id)}
-                      >
-                        {t('notes.hide')}
-                      </button>
-                      <button
-                        className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
-                        onClick={() => navigate(`/public/${note.id}`)}
-                      >
-                        {t('notes.view')}
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
-                      onClick={() => navigate(`/public/${note.id}`)}
-                    >
-                      {t('notes.view')}
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))
-          )}
-        </ul>
-
-        {/* お気に入りノート一覧 */}
-        <h3 className="mt-8 mb-2 font-bold">{t('home.favoriteNotes')}</h3>
-        <ul>
-          {favoriteNoteIds
-            .map((id) => publicNotes.find((note) => note.id === id))
-            .filter((note): note is NoteWithCreator => !!note).length === 0 ? (
-            <li className="text-gray-400 italic py-2">
-              {t('home.noFavorites')}
-            </li>          ) : (            favoriteNoteIds
-              .map((id) => publicNotes.find((note) => note.id === id))
-              .filter((note): note is NoteWithCreator => !!note)
-              .map((note) => (
-                <li
-                  key={note.id}
-                  className="flex items-center justify-between py-2 border-b"
-                >
-                  <div>
-                    <span className="block">{note.title ?? t('notes.untitled')}</span>
-                    <span className="block text-xs text-gray-400 mt-1">
-                      {t('notes.creator')}: {note.creator_name || 'Unknown User'}
-                    </span>
-                  </div>
-                  <div>
-                    <button
-                      className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded"
-                      onClick={() => navigate(`/public/${note.id}`)}
-                    >
-                      {t('notes.view')}
-                    </button>
-                    <button
-                      className="ml-2 p-1 rounded bg-transparent hover:bg-gray-200 transition"
-                      onClick={() => toggleFavorite(note.id)}
-                      aria-label={t('home.actions.unfavorite')}
-                    >
-                      <Star className="inline h-4 w-4 text-yellow-400" />
-                    </button>
-                  </div>
-                </li>
-              ))
-          )}
-        </ul>
       </CardContent>
     </Card>
   );

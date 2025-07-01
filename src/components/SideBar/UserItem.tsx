@@ -32,15 +32,15 @@ const UserItem: FC<Props> = ({ user, signout }) => {
               </span>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-neutral-900 dark:text-neutral-100 truncate">
+              <p className="font-medium text-neutral-900 dark:text-white truncate">
                 {user.user_metadata.name}{t('user.nameSuffix')}
               </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+              <p className="text-xs text-neutral-500 dark:text-neutral-300 truncate">
                 {t('user.workspace')}
               </p>
             </div>
           </div>
-          <ChevronsLeftRight className="w-4 h-4 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors duration-150 flex-shrink-0" />
+          <ChevronsLeftRight className="w-4 h-4 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white transition-colors duration-150 flex-shrink-0" />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent

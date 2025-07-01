@@ -42,8 +42,8 @@ export function SearchModal({
           <CommandEmpty>
             <div className="flex flex-col items-center justify-center py-8">
               <FileText className="w-12 h-12 text-neutral-400 mb-4" />
-              <p className="text-neutral-500 dark:text-neutral-400 font-medium">{t('search.noResults')}</p>
-              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">{t('search.noResultsDescription')}</p>
+              <p className="text-neutral-500 dark:text-neutral-300 font-medium">{t('search.noResults')}</p>
+              <p className="text-sm text-neutral-400 dark:text-neutral-400 mt-1">{t('search.noResultsDescription')}</p>
             </div>
           </CommandEmpty>
           <CommandGroup heading={t('search.title')}>

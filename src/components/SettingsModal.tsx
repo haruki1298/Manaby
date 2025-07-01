@@ -21,6 +21,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [nameUpdateMessage, setNameUpdateMessage] = useState<string | null>(null);
   const [tempDisplayName, setTempDisplayName] = useState('');
+  
   const {
     settings,
     setAutoSave,
@@ -89,16 +90,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                 {t('settings.general.title')}
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                   <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                    <p className="font-medium text-neutral-900 dark:text-white">
                       {t('settings.autoSave')}
                     </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
                       {t('settings.autoSave.description')}
                     </p>
                   </div>
@@ -111,10 +112,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
                 <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                   <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                    <p className="font-medium text-neutral-900 dark:text-white">
                       {t('settings.defaultLanguage')}
                     </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
                       {t('settings.defaultLanguage.description')}
                     </p>
                   </div>
@@ -123,7 +124,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     onChange={(e) => {
                       setDefaultLanguage(e.target.value);
                     }}
-                    className="px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+                    className="px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
                   >
                     <option value="ja">{t('language.ja')}</option>
                     <option value="en">{t('language.en')}</option>
@@ -137,12 +138,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                 {t('settings.account.title')}
               </h3>
               <div className="space-y-4">
                 <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                  <p className="font-medium text-neutral-900 dark:text-neutral-100 mb-2">
+                  <p className="font-medium text-neutral-900 dark:text-white mb-2">
                     {t('settings.profile')}
                   </p>
                   <div className="grid grid-cols-1 gap-4">
@@ -157,7 +158,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                           onChange={(e) => setTempDisplayName(e.target.value)}
                           placeholder={t('settings.displayName.placeholder')}
                           disabled={isUpdatingName}
-                          className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                         <button
                           onClick={handleDisplayNameSubmit}
@@ -187,12 +188,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                 {t('settings.appearance.title')}
               </h3>
               <div className="space-y-4">
                 <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                  <p className="font-medium text-neutral-900 dark:text-neutral-100 mb-3">
+                  <p className="font-medium text-neutral-900 dark:text-white mb-3">
                     {t('settings.theme')}
                   </p>
                   <div className="grid grid-cols-3 gap-3">
@@ -232,7 +233,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   </div>
                 </div>
                 <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                  <p className="font-medium text-neutral-900 dark:text-neutral-100 mb-3">
+                  <p className="font-medium text-neutral-900 dark:text-white mb-3">
                     {t('settings.fontSize')}: {settings.fontSize}px
                   </p>
                   <input
@@ -256,23 +257,23 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                 {t('settings.privacy.title')}
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                   <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                    <p className="font-medium text-neutral-900 dark:text-white">
                       {t('settings.defaultNoteVisibility')}
                     </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
                       {t('settings.defaultNoteVisibility.description')}
                     </p>
                   </div>
                   <select 
                     value={settings.defaultNoteVisibility}
                     onChange={(e) => setDefaultNoteVisibility(e.target.value as 'private' | 'public')}
-                    className="px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+                    className="px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
                   >
                     <option value="private">{t('settings.visibility.private')}</option>
                     <option value="public">{t('settings.visibility.public')}</option>

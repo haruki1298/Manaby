@@ -13,6 +13,7 @@ interface SettingsState {
   fontSize: number;
   defaultNoteVisibility: 'private' | 'public';
   displayName: string;
+  showCategoryManager: boolean;
 }
 
 const defaultSettings: SettingsState = {
@@ -22,6 +23,7 @@ const defaultSettings: SettingsState = {
   fontSize: 14,
   defaultNoteVisibility: 'private',
   displayName: '',
+  showCategoryManager: false,
 };
 
 interface SettingsContextType {
@@ -33,6 +35,7 @@ interface SettingsContextType {
   setFontSize: (size: number) => void;
   setDefaultNoteVisibility: (visibility: 'private' | 'public') => void;
   setDisplayName: (name: string) => Promise<void>;
+  setShowCategoryManager: (show: boolean) => void;
   resetSettings: () => Promise<void>;
 }
 
@@ -197,6 +200,10 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     }
   };
 
+  const setShowCategoryManager = (show: boolean) => {
+    updateSettings({ showCategoryManager: show });
+  };
+
   const resetSettings = async () => {
     setSettings(defaultSettings);
     // i18nもデフォルト言語にリセット
@@ -213,6 +220,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     setFontSize,
     setDefaultNoteVisibility,
     setDisplayName,
+    setShowCategoryManager,
     resetSettings,
   };
 

@@ -20,7 +20,7 @@ function Editor({ onChange, initialContent, readOnly = false }: EditorProps) {
   });
 
   return (
-    <div>
+    <div className="prose dark:prose-invert max-w-none">
       <BlockNoteView  
         editor={editor}
         editable={!readOnly} // ← ここで編集可否を制御

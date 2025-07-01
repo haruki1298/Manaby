@@ -21,9 +21,9 @@ export function Item({
   return (
     <div
       className={cn(
-        'group min-h-[32px] text-sm py-2 pr-3 w-full flex items-center text-neutral-700 dark:text-neutral-300 font-medium transition-all duration-150',
-        'hover:text-neutral-900 dark:hover:text-neutral-100',
-        isActive && 'text-neutral-900 dark:text-neutral-100'
+        'group min-h-[32px] text-sm py-2 pr-3 w-full flex items-center text-neutral-700 dark:text-neutral-200 font-medium transition-all duration-150',
+        'hover:text-neutral-900 dark:hover:text-white',
+        isActive && 'text-neutral-900 dark:text-white'
       )}
       onClick={onClick}
       role="button"
@@ -33,7 +33,7 @@ export function Item({
         className="shrink-0 w-6 h-6 mr-2 flex items-center justify-center rounded-sm hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors duration-150"
         onClick={onIconClick}
       >
-        <Icon className="w-4 h-4 text-muted-foreground group-hover:text-neutral-600 dark:group-hover:text-neutral-400" />
+        <Icon className="w-4 h-4 text-muted-foreground group-hover:text-neutral-600 dark:group-hover:text-neutral-300" />
       </div>
       <span className="truncate flex-1 select-none">{label}</span>
       {trailingItem}

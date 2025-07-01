@@ -118,9 +118,9 @@ function Signup() {
                     placeholder="ユーザー名"
                     required
                     type="text"
-                    className={`appearance-none block w-full px-3 py-2 border ${
+                    className={`input-white-bg appearance-none block w-full px-3 py-2 border ${
                       nameError ? "border-red-500" : "border-gray-300"
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm`}
+                    } rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm`}
                   />
                   {nameError && <p className="mt-1 text-sm text-red-600">{nameError}</p>}
                 </div>
@@ -143,9 +143,9 @@ function Signup() {
                     placeholder="メールアドレス"
                     required
                     type="email"
-                    className={`appearance-none block w-full px-3 py-2 border ${
+                    className={`input-white-bg appearance-none block w-full px-3 py-2 border ${
                       emailError ? "border-red-500" : "border-gray-300"
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm`}
+                    } rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm`}
                   />
                   {emailError && <p className="mt-1 text-sm text-red-600">{emailError}</p>}
                 </div>
@@ -168,9 +168,9 @@ function Signup() {
                     id="password"
                     name="password"
                     placeholder="パスワード"
-                    className={`appearance-none block w-full px-3 py-2 border ${
+                    className={`input-white-bg appearance-none block w-full px-3 py-2 border ${
                       passwordError ? "border-red-500" : "border-gray-300"
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm`}
+                    } rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm`}
                   />
                    {passwordError && <p className="mt-1 text-sm text-red-600">{passwordError}</p>}
                 </div>

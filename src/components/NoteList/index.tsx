@@ -69,10 +69,10 @@ export function NoteList({ layer = 0, parentId }: NoteListProps) {
       >
         <div className="text-center">
           <FileText className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
-          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-300">
             {t('notes.noNotes')}
           </p>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+          <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">
             {t('notes.noNotesDescription')}
           </p>
         </div>

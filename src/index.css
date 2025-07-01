@@ -102,7 +102,7 @@ body,
   h1, h2, h3, h4, h5 {
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, 'sans-serif';
     font-weight: 700;
-    color: var(--primary-300);
+    color: var(--foreground);
     letter-spacing: 0.02em;
   }
 }
@@ -146,4 +146,122 @@ body,
     from { opacity: 0; transform: translateY(20px);}
     to { opacity: 1; transform: translateY(0);}
   }
+}
+
+@layer base {
+  /* 白背景のinputフィールド用のクラス（テキストボックス等） */
+  .input-white-bg {
+    background-color: white;
+    color: #111827;
+    border: 1px solid #d1d5db;
+  }
+  
+  .input-white-bg::placeholder {
+    color: #9ca3af;
+  }
+  
+  .input-white-bg:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6;
+    border-color: #3b82f6;
+  }
+  
+  /* ダークモード時も白背景を維持、文字色のみ調整 */
+  .dark .input-white-bg {
+    background-color: white;
+    color: #111827;
+  }
+  
+  .dark .input-white-bg::placeholder {
+    color: #6b7280;
+  }
+  
+  /* エラー状態の境界線 */
+  .input-white-bg.border-red-500 {
+    border-color: #ef4444;
+  }
+  
+  .dark .input-white-bg.border-red-500 {
+    border-color: #ef4444;
+  }
+}
+
+/* BlockNote エディターのダークモード対応 */
+.dark .bn-editor {
+  color: #f5f4f1 !important;
+}
+
+.dark .bn-editor .ProseMirror {
+  color: #f5f4f1 !important;
+}
+
+.dark .bn-editor .bn-block-content {
+  color: #f5f4f1 !important;
+}
+
+.dark .bn-editor p, 
+.dark .bn-editor h1, 
+.dark .bn-editor h2, 
+.dark .bn-editor h3, 
+.dark .bn-editor h4, 
+.dark .bn-editor h5, 
+.dark .bn-editor h6 {
+  color: #f5f4f1 !important;
+}
+
+/* ダークモード時のプレースホルダー */
+.dark .bn-editor .ProseMirror .is-empty::before {
+  color: #9ca3af !important;
+}
+
+/* タイトル入力用の専用クラス */
+.title-input {
+  color: #1f2937; /* ライトモード: 濃いグレー */
+}
+
+.dark .title-input {
+  color: #ffffff; /* ダークモード: 純白 */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* 少し影をつけて読みやすく */
+}
+
+/* プレースホルダーも見やすく */
+.title-input::placeholder {
+  color: #9ca3af;
+}
+
+.dark .title-input::placeholder {
+  color: #d1d5db;
+}
+
+/* グローバルなテキスト色クラス */
+.text-improved {
+  color: #111827; /* neutral-900 */
+}
+
+.dark .text-improved {
+  color: #ffffff; /* white */
+}
+
+.text-improved-secondary {
+  color: #4b5563; /* neutral-600 */
+}
+
+.dark .text-improved-secondary {
+  color: #e5e7eb; /* neutral-200 */
+}
+
+.text-improved-muted {
+  color: #6b7280; /* neutral-500 */
+}
+
+.dark .text-improved-muted {
+  color: #d1d5db; /* neutral-300 */
+}
+
+.text-improved-subtle {
+  color: #9ca3af; /* neutral-400 */
+}
+
+.dark .text-improved-subtle {
+  color: #9ca3af; /* neutral-400 */
 }
