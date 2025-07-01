@@ -353,4 +353,30 @@ export const noteRepository = {
       console.log('Successfully updated creator name for', data?.length || 0, 'notes');
       return data;
     },
+
+    // 閲覧数を増加
+    async incrementViews(noteId: number) {
+      // まず現在の閲覧数を取得
+      const { data: currentNote } = await supabase
+        .from('notes')
+        .select('views')
+        .eq('id', noteId)
+        .single();
+
+      const newViews = (currentNote?.views || 0) + 1;
+
+      const { data, error } = await supabase
+        .from('notes')
+        .update({ views: newViews })
+        .eq('id', noteId)
+        .select('views')
+        .single();
+      
+      if (error != null) {
+        console.error('Error incrementing views:', error);
+        throw new Error(error.message);
+      }
+      
+      return data;
+    },
 };

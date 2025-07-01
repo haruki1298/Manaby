@@ -21,6 +21,20 @@ const NoteDetail = () => {
   useEffect(() => {
     fetchOne();
     initializeCollaborativeEditing();
+    
+    // 閲覧数を増加（デバウンス機能付き）
+    const incrementViews = async () => {
+      try {
+        await noteRepository.incrementViews(id);
+      } catch (error) {
+        console.error('Failed to increment views:', error);
+      }
+    };
+    
+    // 初回読み込み時のみ閲覧数を増加
+    const timeout = setTimeout(incrementViews, 1000);
+    
+    return () => clearTimeout(timeout);
   }, [id]);
     const fetchOne = async () => {
     setIsLoading(true);

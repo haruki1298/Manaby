@@ -105,6 +105,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          views?: number
           content?: string | null
           created_at?: string
           creator_name?: string | null
@@ -116,6 +117,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          views?: number
           content?: string | null
           created_at?: string
           creator_name?: string | null

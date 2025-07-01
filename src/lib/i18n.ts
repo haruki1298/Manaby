@@ -86,6 +86,16 @@ const resources = {
       "home.placeholder.title": "ノートのタイトルを入力",
       "home.createNote": "ノート作成",
       
+      // ソート・フィルター機能
+      "home.sortBy.createdAt": "作成日",
+      "home.sortBy.title": "タイトル",
+      "home.sortBy.views": "閲覧数",
+      "home.sortOrder.asc": "昇順",
+      "home.sortOrder.desc": "降順",
+      "home.filter": "フィルター",
+      "home.filter.onlyFavorites": "お気に入りのみ",
+      "home.filter.onlyMyNotes": "自分のノートのみ",
+      
       // ノート状態
       "status.draft": "下書き",
       "status.published": "公開済み",

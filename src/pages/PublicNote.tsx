@@ -87,6 +87,18 @@ const PublicNote = () => {
           setNote(typedNoteData);
           
           fetchComments(noteIdFromParams, typedNoteData);
+          
+          // 閲覧数を増加（デバウンス機能付き）
+          const incrementViews = async () => {
+            try {
+              await noteRepository.incrementViews(noteIdFromParams);
+            } catch (error) {
+              console.error('Failed to increment views:', error);
+            }
+          };
+          
+          // 初回読み込み時のみ閲覧数を増加
+          setTimeout(incrementViews, 1000);
         } else {
           setNote(null);
         }
