@@ -1,32 +1,25 @@
-// src/types/comment.ts
+// src/types/comment.ts (新規作成または修正)
 
 /**
  * コメント投稿者のプロフィール情報を表す型。
- * 将来的にはSupabaseのprofilesテーブルの構造と一致させることを目指します。
- * ダミーデータ版では、表示に必要な最小限の情報を持ちます。
+ * 現状はprofilesテーブルがないため、IDと仮の表示名のみ。
  */
 export interface UserProfile {
-  id: string;                 // ユーザーの一意なID (例: 'user-alice', 'user-bob')
-  full_name?: string | null;   // 表示名 (例: 'Alice', 'Bob Dummy')
-                              // オプショナルにしておくことで、匿名の場合も表現しやすくします。
-  avatar_url?: string | null;  // アバター画像のURL (例: 'https://via.placeholder.com/40/...')
-                              // これもオプショナルです。
-  // ダミーデータや初期段階では、よりシンプルな display_name だけでもOKです。
-  // display_name?: string;
+  id: string; // auth.users.id (uuid)
+  display_name?: string; // フロントで生成する仮の表示名 (例: "ユーザー (abc123)")
+  // 将来profilesテーブルができたら、full_nameやavatar_urlを追加
 }
 
 /**
- * 個々のコメントデータを表す型。
- * 返信コメントも同じ型を使い、repliesプロパティでネスト構造を表現します。
+ * コメントデータを表す型 (フロントエンド用)
  */
 export interface CommentType {
-  id: string;                 // コメントの一意なID (例: 'dummy-c1', 'dummy-c2')
-  note_id: number;            // このコメントがどのノートに紐づくか (ダミーデータ用)
-                              // PublicNote.tsx で表示中のノートのIDと照合します。
-  user_id: string | null;     // コメント投稿者のユーザーID。匿名の場合はnull。
-  parent_comment_id: string | null; // 返信先の親コメントのID。トップレベルのコメントならnull。
-  content: string;              // コメントの本文。
-  created_at: string;           // コメントの作成日時 (ISO 8601形式の文字列を想定: new Date().toISOString())
-  user: UserProfile | null;   // コメント投稿者の情報。匿名の場合はnull。
-  replies?: CommentType[];     // このコメントへの返信コメントの配列。返信がなければundefinedまたは空配列。
+  id: string;                   // comments.id
+  note_id: number;              // comments.note_id
+  user_id: string | null;       // comments.user_id
+  parent_comment_id: string | null; // comments.parent_comment_id
+  content: string;                // comments.content
+  created_at: string;             // comments.created_at
+  user: UserProfile | null;     // 投稿者情報 (UserProfile型)
+  replies?: CommentType[];       // ネストされた返信コメント
 }
