@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { noteRepository } from "@/modules/notes/note.repository";
 import Editor from "@/components/Editor";
@@ -6,15 +6,17 @@ import { useTranslation } from "react-i18next";
 import { CommentForm } from "@/components/comments/CommentForm";
 import { CommentList } from "@/components/comments/CommentList";
 import { supabase } from '@/lib/supabase';
-import type { Database } from '../../database.types'; 
+import type { Database } from '../../database.types';
 import type { CommentType, UserProfile } from '@/types/comment';
 import { useCurrentUserStore } from '@/modules/auth/current-user.state';
 
+// 型エイリアス (database.types.tsから)
 type NoteRow = Database['public']['Tables']['notes']['Row'];
 type CommentRow = Database['public']['Tables']['comments']['Row'];
 type CommentInsert = Database['public']['Tables']['comments']['Insert'];
 type CommentUpdate = Database['public']['Tables']['comments']['Update'];
 
+// PublicNoteコンポーネントで使うノートの型
 interface NoteWithCreator extends NoteRow {}
 
 const PublicNote = () => {
@@ -23,6 +25,7 @@ const PublicNote = () => {
   const noteIdFromParams = parseInt(params.id!);
   const [note, setNote] = useState<NoteWithCreator | null>(null);
 
+  // コメント機能用のstate
   const [comments, setComments] = useState<CommentType[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
@@ -30,37 +33,22 @@ const PublicNote = () => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [editingComment, setEditingComment] = useState<CommentType | null>(null);
 
-  const buildCommentTree = (flatComments: CommentRow[], currentNote: NoteWithCreator | null): CommentType[] => {
+  // コメントの階層化ヘルパー関数
+  const buildCommentTree = useCallback((flatComments: CommentRow[], currentNote: NoteWithCreator | null): CommentType[] => {
     const commentMap: { [id: string]: CommentType } = {};
     const topLevelComments: CommentType[] = [];
 
     flatComments.forEach(dbComment => {
       let userProfile: UserProfile | null = null;
       if (dbComment.user_id) {
-        
         if (currentNote && dbComment.user_id === currentNote.user_id) {
-          userProfile = {
-            id: dbComment.user_id,
-            display_name: currentNote.creator_name || `ユーザー (${dbComment.user_id.substring(0, 6)})`
-          };
+          userProfile = { id: dbComment.user_id, display_name: currentNote.creator_name || `ユーザー (${dbComment.user_id.substring(0, 6)})` };
         } else {
-          
-          userProfile = {
-            id: dbComment.user_id,
-            display_name: `ユーザー (${dbComment.user_id.substring(0, 6)})`
-          };
+          userProfile = { id: dbComment.user_id, display_name: `ユーザー (${dbComment.user_id.substring(0, 6)})` };
         }
       }
-
       commentMap[dbComment.id] = {
-        id: dbComment.id,
-        note_id: dbComment.note_id,
-        user_id: dbComment.user_id,
-        parent_comment_id: dbComment.parent_comment_id,
-        content: dbComment.content,
-        created_at: dbComment.created_at,
-        user: userProfile,
-        replies: []
+        id: dbComment.id, note_id: dbComment.note_id, user_id: dbComment.user_id, parent_comment_id: dbComment.parent_comment_id, content: dbComment.content, created_at: dbComment.created_at, user: userProfile, replies: []
       };
     });
 
@@ -75,111 +63,76 @@ const PublicNote = () => {
       }
     });
     return topLevelComments;
-  };
+  }, []);
 
-  useEffect(() => {
-    const initializePage = async () => {
-      if (noteIdFromParams && !isNaN(noteIdFromParams)) {
-        
-        const noteData = await noteRepository.getPublicNoteWithCreator(noteIdFromParams);
-        if (noteData) {
-          const typedNoteData = noteData as NoteWithCreator;
-          setNote(typedNoteData);
-          
-          fetchComments(noteIdFromParams, typedNoteData);
-          
-          // 閲覧数を増加（デバウンス機能付き）
-          const incrementViews = async () => {
-            try {
-              await noteRepository.incrementViews(noteIdFromParams);
-            } catch (error) {
-              console.error('Failed to increment views:', error);
-            }
-          };
-          
-          // 初回読み込み時のみ閲覧数を増加
-          setTimeout(incrementViews, 1000);
-        } else {
-          setNote(null);
-        }
-      }
-    };
-    initializePage();
-  }, [noteIdFromParams]);
-
-  const fetchComments = async (currentNoteId: number, currentNote: NoteWithCreator | null) => {
+  const fetchComments = useCallback(async (currentNoteId: number, currentNote: NoteWithCreator | null) => {
     setIsLoadingComments(true);
     try {
       const { data, error } = await supabase
         .from('comments')
         .select('*')
         .eq('note_id', currentNoteId)
-        .eq('is_deleted', false)
-        .eq('is_hidden_by_moderator', false)
+        .eq('is_deleted', false) // ソフトデリートを使わない場合はこの行は削除可能
         .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching comments:', error.message);
-        setComments([]);
-      } else if (data) {
-        const commentTree = buildCommentTree(data, currentNote);
-        setComments(commentTree);
-      }
+      if (error) { throw error; }
+      
+      const commentTree = buildCommentTree(data, currentNote);
+      setComments(commentTree);
     } catch (e: any) {
-      console.error('Unexpected error fetching comments:', e.message);
+      console.error('Error fetching comments:', e.message);
       setComments([]);
     } finally {
       setIsLoadingComments(false);
     }
-  };
+  }, [buildCommentTree]);
 
+  useEffect(() => {
+    const initializePage = async () => {
+      if (noteIdFromParams && !isNaN(noteIdFromParams)) {
+        try {
+          const noteData = await noteRepository.getPublicNoteWithCreator(noteIdFromParams);
+          if (noteData) {
+            const typedNoteData = noteData as NoteWithCreator;
+            setNote(typedNoteData);
+            fetchComments(noteIdFromParams, typedNoteData);
+            noteRepository.incrementViews(noteIdFromParams);
+          } else {
+            setNote(null);
+          }
+        } catch (error) {
+          console.error("Failed to initialize page:", error);
+          setNote(null);
+        }
+      }
+    };
+    initializePage();
+  }, [noteIdFromParams, fetchComments]);
+
+  // 新規投稿・返信・編集をまとめて処理する関数
   const handleCommentSubmit = async (content: string, parentIdToReply?: string): Promise<boolean> => {
-    if (!noteIdFromParams || !note) { alert(t('errors.noteNotFound', 'エラー: ノート情報がありません')); return false; }
-    if (!currentUser) { alert(t('comments.loginRequiredForPost', 'ログインが必要です')); return false; }
-    if (!content.trim()) { alert(t('comments.contentRequired', 'コメントを入力してください')); return false; }
+    if (!noteIdFromParams || !note) { alert(t('errors.noteNotFound')); return false; }
+    if (!currentUser) { alert(t('comments.loginRequiredForPost')); return false; }
+    if (!content.trim()) { alert(t('comments.contentRequired')); return false; }
 
     setIsSubmittingComment(true);
 
-    if (editingComment) {
-      const commentUpdateData: CommentUpdate = {
-        content: content,
-        updated_at: new Date().toISOString(), 
-      };
-      try {
-        const { error } = await supabase
-          .from('comments')
-          .update(commentUpdateData)
-          .eq('id', editingComment.id)
-          .eq('user_id', currentUser.id);
-
-        if (error) { throw error; }
-
-        await fetchComments(noteIdFromParams, note); 
-        setEditingComment(null); 
-        return true;
-      } catch (e: any) {
-        alert(`${t('comments.editFailed', '編集失敗')}: ${e.message}`);
-        return false;
-      } finally {
-        setIsSubmittingComment(false);
-      }
-    }
-
-   
-    const newCommentData: CommentInsert = {
-      note_id: noteIdFromParams,
-      user_id: currentUser.id,
-      content,
-      parent_comment_id: parentIdToReply || null,
-    };
     try {
-      const { error } = await supabase.from('comments').insert(newCommentData);
-      if (error) { throw error; }
-      await fetchComments(noteIdFromParams, note);
-      setReplyingToCommentId(null);
+      if (editingComment) { // 編集の場合
+        const commentUpdateData: CommentUpdate = { content, updated_at: new Date().toISOString() };
+        const { error } = await supabase.from('comments').update(commentUpdateData).eq('id', editingComment.id).eq('user_id', currentUser.id);
+        if (error) { throw error; }
+        setEditingComment(null);
+      } else { // 新規・返信の場合
+        const newCommentData: CommentInsert = { note_id: noteIdFromParams, user_id: currentUser.id, content, parent_comment_id: parentIdToReply || null };
+        const { error } = await supabase.from('comments').insert(newCommentData);
+        if (error) { throw error; }
+        setReplyingToCommentId(null);
+      }
+      await fetchComments(noteIdFromParams, note); // 成功したらリストを再取得
       return true;
     } catch (e: any) {
-      alert(`${t('comments.postFailed', '投稿失敗')}: ${e.message}`);
+      alert(`${editingComment ? t('comments.editFailed') : t('comments.postFailed')}: ${e.message}`);
       return false;
     } finally {
       setIsSubmittingComment(false);
@@ -187,50 +140,54 @@ const PublicNote = () => {
   };
 
   const handleReplyClick = (commentId: string) => {
-    setEditingComment(null); 
+    setEditingComment(null);
     setReplyingToCommentId(commentId);
-    const formElement = document.getElementById('comment-form-textarea');
-    if (formElement) {
-      formElement.focus();
-    }
+    document.getElementById('comment-form-textarea')?.focus();
   };
 
-  const handleCancelReply = () => {
-    setReplyingToCommentId(null);
-  };
+  const handleCancelReply = () => { setReplyingToCommentId(null); };
 
   const handleEditComment = (commentToEdit: CommentType) => {
-    setReplyingToCommentId(null); 
+    setReplyingToCommentId(null);
     setEditingComment(commentToEdit);
-    const formElement = document.getElementById('comment-form-textarea');
-    if (formElement) {
-      formElement.focus();
-    }
+    document.getElementById('comment-form-textarea')?.focus();
   };
 
-  const handleCancelEdit = () => {
-    setEditingComment(null);
-  };
+  const handleCancelEdit = () => { setEditingComment(null); };
 
+  // 物理削除 (DELETE) を行う関数
   const handleDeleteComment = async (commentIdToDelete: string) => {
-    if (!currentUser || !note) { alert(t('errors.unexpected', 'エラーが発生しました')); return; }
-    const confirmed = window.confirm(t('comments.confirmDelete', 'このコメントを削除しますか？'));
-    if (confirmed) {
-      setIsSubmittingComment(true);
-      try {
-        const { error } = await supabase.from('comments').update({ is_deleted: true }).eq('id', commentIdToDelete).eq('user_id', currentUser.id);
-        if (error) {
-          throw error;
-        }
-        await fetchComments(noteIdFromParams, note);
-      } catch (e: any) {
-        alert(`${t('comments.deleteFailed', '削除失敗')}: ${e.message}`);
-      } finally {
-        setIsSubmittingComment(false);
-      }
+    if (!currentUser) { alert(t('comments.loginRequiredForDelete')); return; }
+    const confirmed = window.confirm(t('comments.confirmPermanentDelete', 'このコメントを完全に削除しますか？\nこの操作は元に戻せません。'));
+    if (!confirmed) return;
+
+    setIsSubmittingComment(true);
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentIdToDelete)
+        .eq('user_id', currentUser.id);
+
+      if (error) { throw error; }
+      
+      // UIから即時削除
+      const removeCommentRecursive = (commentsArr: CommentType[], idToRemove: string): CommentType[] => {
+        return commentsArr
+          .filter(c => c.id !== idToRemove)
+          .map(c => ({
+            ...c,
+            replies: c.replies ? removeCommentRecursive(c.replies, idToRemove) : [],
+          }));
+      };
+      setComments(prev => removeCommentRecursive(prev, commentIdToDelete));
+
+    } catch (e: any) {
+      alert(`${t('comments.deleteFailed')}: ${e.message}`);
+    } finally {
+      setIsSubmittingComment(false);
     }
   };
-
 
   if (!note) return <div>{t('notes.loading', 'ノートを読み込み中...')}</div>;
 
