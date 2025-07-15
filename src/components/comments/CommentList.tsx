@@ -1,5 +1,5 @@
 // src/components/comments/CommentList.tsx
-import React from 'react';
+//import React from 'react';
 import { CommentItem } from './CommentItem';
 import type { CommentType } from '@/types/comment'; 
 

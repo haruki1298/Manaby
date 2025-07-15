@@ -1,5 +1,5 @@
 // src/components/comments/CommentItem.tsx
-import React from 'react';
+//import React from 'react';
 import type { CommentType } from '@/types/comment'; 
 import { useCurrentUserStore } from '@/modules/auth/current-user.state'; 
 
