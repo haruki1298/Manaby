@@ -10,13 +10,12 @@ import type { Database } from '../../database.types';
 import type { CommentType, UserProfile } from '@/types/comment';
 import { useCurrentUserStore } from '@/modules/auth/current-user.state';
 
-// 型エイリアス (database.types.tsから)
+// 型エイリアス
 type NoteRow = Database['public']['Tables']['notes']['Row'];
 type CommentRow = Database['public']['Tables']['comments']['Row'];
 type CommentInsert = Database['public']['Tables']['comments']['Insert'];
 type CommentUpdate = Database['public']['Tables']['comments']['Update'];
 
-// PublicNoteコンポーネントで使うノートの型
 interface NoteWithCreator extends NoteRow {}
 
 const PublicNote = () => {
@@ -25,7 +24,6 @@ const PublicNote = () => {
   const noteIdFromParams = parseInt(params.id!);
   const [note, setNote] = useState<NoteWithCreator | null>(null);
 
-  // コメント機能用のstate
   const [comments, setComments] = useState<CommentType[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
@@ -33,19 +31,18 @@ const PublicNote = () => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [editingComment, setEditingComment] = useState<CommentType | null>(null);
 
-  // コメントの階層化ヘルパー関数
-  const buildCommentTree = useCallback((flatComments: CommentRow[], currentNote: NoteWithCreator | null): CommentType[] => {
+  const buildCommentTree = useCallback((flatComments: CommentRow[]): CommentType[] => {
     const commentMap: { [id: string]: CommentType } = {};
     const topLevelComments: CommentType[] = [];
 
     flatComments.forEach(dbComment => {
       let userProfile: UserProfile | null = null;
       if (dbComment.user_id) {
-        if (currentNote && dbComment.user_id === currentNote.user_id) {
-          userProfile = { id: dbComment.user_id, display_name: currentNote.creator_name || `ユーザー (${dbComment.user_id.substring(0, 6)})` };
-        } else {
-          userProfile = { id: dbComment.user_id, display_name: `ユーザー (${dbComment.user_id.substring(0, 6)})` };
-        }
+        userProfile = {
+          id: dbComment.user_id,
+          full_name: dbComment.commenter_name,
+          avatar_url: dbComment.commenter_avatar_url,
+        };
       }
       commentMap[dbComment.id] = {
         id: dbComment.id, note_id: dbComment.note_id, user_id: dbComment.user_id, parent_comment_id: dbComment.parent_comment_id, content: dbComment.content, created_at: dbComment.created_at, user: userProfile, replies: []
@@ -65,19 +62,17 @@ const PublicNote = () => {
     return topLevelComments;
   }, []);
 
-  const fetchComments = useCallback(async (currentNoteId: number, currentNote: NoteWithCreator | null) => {
+  const fetchComments = useCallback(async (currentNoteId: number) => {
     setIsLoadingComments(true);
     try {
       const { data, error } = await supabase
         .from('comments')
         .select('*')
         .eq('note_id', currentNoteId)
-        .eq('is_deleted', false) // ソフトデリートを使わない場合はこの行は削除可能
+        .eq('is_deleted', false)
         .order('created_at', { ascending: true });
-
       if (error) { throw error; }
-      
-      const commentTree = buildCommentTree(data, currentNote);
+      const commentTree = buildCommentTree(data);
       setComments(commentTree);
     } catch (e: any) {
       console.error('Error fetching comments:', e.message);
@@ -93,13 +88,10 @@ const PublicNote = () => {
         try {
           const noteData = await noteRepository.getPublicNoteWithCreator(noteIdFromParams);
           if (noteData) {
-            const typedNoteData = noteData as NoteWithCreator;
-            setNote(typedNoteData);
-            fetchComments(noteIdFromParams, typedNoteData);
+            setNote(noteData as NoteWithCreator);
+            fetchComments(noteIdFromParams);
             noteRepository.incrementViews(noteIdFromParams);
-          } else {
-            setNote(null);
-          }
+          } else { setNote(null); }
         } catch (error) {
           console.error("Failed to initialize page:", error);
           setNote(null);
@@ -109,27 +101,35 @@ const PublicNote = () => {
     initializePage();
   }, [noteIdFromParams, fetchComments]);
 
-  // 新規投稿・返信・編集をまとめて処理する関数
   const handleCommentSubmit = async (content: string, parentIdToReply?: string): Promise<boolean> => {
     if (!noteIdFromParams || !note) { alert(t('errors.noteNotFound')); return false; }
     if (!currentUser) { alert(t('comments.loginRequiredForPost')); return false; }
     if (!content.trim()) { alert(t('comments.contentRequired')); return false; }
 
     setIsSubmittingComment(true);
-
     try {
-      if (editingComment) { // 編集の場合
+      if (editingComment) {
         const commentUpdateData: CommentUpdate = { content, updated_at: new Date().toISOString() };
         const { error } = await supabase.from('comments').update(commentUpdateData).eq('id', editingComment.id).eq('user_id', currentUser.id);
         if (error) { throw error; }
         setEditingComment(null);
-      } else { // 新規・返信の場合
-        const newCommentData: CommentInsert = { note_id: noteIdFromParams, user_id: currentUser.id, content, parent_comment_id: parentIdToReply || null };
+      } else {
+        const commenterName = (currentUser.user_metadata as any)?.name || currentUser.email?.split('@')[0];
+        const commenterAvatarUrl = (currentUser.user_metadata as any)?.avatar_url || null;
+        
+        const newCommentData: CommentInsert = {
+          note_id: noteIdFromParams,
+          user_id: currentUser.id,
+          content,
+          parent_comment_id: parentIdToReply || null,
+          commenter_name: commenterName,
+          commenter_avatar_url: commenterAvatarUrl,
+        };
         const { error } = await supabase.from('comments').insert(newCommentData);
         if (error) { throw error; }
         setReplyingToCommentId(null);
       }
-      await fetchComments(noteIdFromParams, note); // 成功したらリストを再取得
+      await fetchComments(noteIdFromParams);
       return true;
     } catch (e: any) {
       alert(`${editingComment ? t('comments.editFailed') : t('comments.postFailed')}: ${e.message}`);
@@ -155,7 +155,6 @@ const PublicNote = () => {
 
   const handleCancelEdit = () => { setEditingComment(null); };
 
-  // 物理削除 (DELETE) を行う関数
   const handleDeleteComment = async (commentIdToDelete: string) => {
     if (!currentUser) { alert(t('comments.loginRequiredForDelete')); return; }
     const confirmed = window.confirm(t('comments.confirmPermanentDelete', 'このコメントを完全に削除しますか？\nこの操作は元に戻せません。'));
@@ -163,25 +162,12 @@ const PublicNote = () => {
 
     setIsSubmittingComment(true);
     try {
-      const { error } = await supabase
-        .from('comments')
-        .delete()
-        .eq('id', commentIdToDelete)
-        .eq('user_id', currentUser.id);
-
+      const { error } = await supabase.from('comments').delete().eq('id', commentIdToDelete).eq('user_id', currentUser.id);
       if (error) { throw error; }
-      
-      // UIから即時削除
       const removeCommentRecursive = (commentsArr: CommentType[], idToRemove: string): CommentType[] => {
-        return commentsArr
-          .filter(c => c.id !== idToRemove)
-          .map(c => ({
-            ...c,
-            replies: c.replies ? removeCommentRecursive(c.replies, idToRemove) : [],
-          }));
+        return commentsArr.filter(c => c.id !== idToRemove).map(c => ({...c, replies: c.replies ? removeCommentRecursive(c.replies, idToRemove) : []}));
       };
       setComments(prev => removeCommentRecursive(prev, commentIdToDelete));
-
     } catch (e: any) {
       alert(`${t('comments.deleteFailed')}: ${e.message}`);
     } finally {
@@ -221,7 +207,7 @@ const PublicNote = () => {
             </div>
           )}
           {isLoadingComments ? (
-            <p>{t('comments.loading', 'コメントを読み込み中...')}</p>
+            <p className="text-gray-500 dark:text-gray-400">{t('comments.loading', 'コメントを読み込み中...')}</p>
           ) : comments.length > 0 ? (
             <CommentList
               comments={comments}
@@ -230,7 +216,7 @@ const PublicNote = () => {
               onDelete={handleDeleteComment}
             />
           ) : (
-            <p>{t('comments.noComments', 'まだコメントはありません。')}</p>
+            <p className="text-gray-500 dark:text-gray-400">{t('comments.noComments', 'まだコメントはありません。')}</p>
           )}
         </div>
       </div>

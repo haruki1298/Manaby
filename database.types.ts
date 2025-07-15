@@ -84,6 +84,8 @@ export type Database = {
       }
       comments: {
         Row: {
+          commenter_avatar_url: string | null
+          commenter_name: string | null
           content: string
           created_at: string
           id: string
@@ -95,6 +97,8 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          commenter_avatar_url?: string | null
+          commenter_name?: string | null
           content: string
           created_at?: string
           id?: string
@@ -106,6 +110,8 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          commenter_avatar_url?: string | null
+          commenter_name?: string | null
           content?: string
           created_at?: string
           id?: string
