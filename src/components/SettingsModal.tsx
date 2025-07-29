@@ -5,7 +5,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Settings, User, Moon, Sun, Shield, Palette } from 'lucide-react';
+import { Settings, User, Moon, Sun, Palette } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/modules/settings/settings.state.tsx';
@@ -29,9 +29,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
     setDefaultLanguage,
     setTheme,
     setFontSize,
-    setDefaultNoteVisibility,
     setDisplayName,
-    resetSettings,
   } = useSettings();
 
   // 設定が変更されたときにtempDisplayNameを同期
@@ -82,7 +80,6 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
     { id: 'general', label: t('settings.general'), icon: Settings },
     { id: 'account', label: t('settings.account'), icon: User },
     { id: 'appearance', label: t('settings.appearance'), icon: Palette },
-    { id: 'privacy', label: t('settings.privacy'), icon: Shield },
   ];
 
   const renderTabContent = () => {
@@ -95,7 +92,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                 {t('settings.general.title')}
               </h3>
               <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0 border border-neutral-200 dark:border-neutral-700">
                   <div>
                     <p className="font-medium text-neutral-900 dark:text-white">
                       {t('settings.autoSave')}
@@ -111,7 +108,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                     className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 self-start sm:self-auto"
                   />
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0 border border-neutral-200 dark:border-neutral-700">
                   <div className="flex-1">
                     <p className="font-medium text-neutral-900 dark:text-white">
                       {t('settings.defaultLanguage')}
@@ -140,7 +137,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
                   {t('auth.session', 'セッション')}
                 </h3>
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                <div className="p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                     <div className="flex-1">
                       <p className="font-medium text-neutral-900 dark:text-white">
@@ -173,7 +170,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                 {t('settings.account.title')}
               </h3>
               <div className="space-y-4">
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                <div className="p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
                   <p className="font-medium text-neutral-900 dark:text-white mb-2">
                     {t('settings.profile')}
                   </p>
@@ -223,7 +220,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                 {t('settings.appearance.title')}
               </h3>
               <div className="space-y-4">
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                <div className="p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
                   <p className="font-medium text-neutral-900 dark:text-white mb-3">
                     {t('settings.theme')}
                   </p>
@@ -263,7 +260,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                     </div>
                   </div>
                 </div>
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                <div className="p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
                   <p className="font-medium text-neutral-900 dark:text-white mb-3">
                     {t('settings.fontSize')}: {settings.fontSize}px
                   </p>
@@ -284,66 +281,6 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
             </div>
           </div>
         );
-      case 'privacy':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
-                {t('settings.privacy.title')}
-              </h3>
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0">
-                  <div className="flex-1">
-                    <p className="font-medium text-neutral-900 dark:text-white">
-                      {t('settings.defaultNoteVisibility')}
-                    </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                      {t('settings.defaultNoteVisibility.description')}
-                    </p>
-                  </div>
-                  <select 
-                    value={settings.defaultNoteVisibility}
-                    onChange={(e) => setDefaultNoteVisibility(e.target.value as 'private' | 'public')}
-                    className="w-full sm:w-auto px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
-                  >
-                    <option value="private">{t('settings.visibility.private')}</option>
-                    <option value="public">{t('settings.visibility.public')}</option>
-                  </select>
-                </div>
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <h4 className="font-medium text-red-900 dark:text-red-100 mb-2">
-                    {t('settings.dangerZone')}
-                  </h4>
-                  <p className="text-sm text-red-700 dark:text-red-300 mb-3">
-                    {t('settings.dangerZone.description')}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <button 
-                      onClick={async () => {
-                        if (confirm(t('settings.resetConfirm'))) {
-                          await resetSettings();
-                        }
-                      }}
-                      className="w-full sm:w-auto px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-medium transition-colors duration-150"
-                    >
-                      {t('settings.resetSettings')}
-                    </button>
-                    <button 
-                      onClick={() => {
-                        if (confirm(t('settings.deleteConfirm'))) {
-                          alert(t('settings.deleteNotImplemented'));
-                        }
-                      }}
-                      className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors duration-150"
-                    >
-                      {t('settings.deleteAllData')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
       default:
         return null;
     }
@@ -351,10 +288,10 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh] md:h-[80vh] w-[95vw] md:w-full p-0">
+      <DialogContent className="max-w-4xl h-[80vh] md:h-[80vh] w-[95vw] md:w-full p-0 bg-white dark:bg-neutral-800">
         <div className="flex flex-col md:flex-row h-full">
           {/* サイドバー - モバイルでは上部、デスクトップでは左側 */}
-          <div className="w-full md:w-64 bg-neutral-50 dark:bg-neutral-800 border-b md:border-b-0 md:border-r border-neutral-200 dark:border-neutral-700">
+          <div className="w-full md:w-64 bg-white dark:bg-neutral-800 border-b md:border-b-0 md:border-r border-neutral-200 dark:border-neutral-700">
             <DialogHeader className="p-4 md:p-6 border-b border-neutral-200 dark:border-neutral-700">
               <DialogTitle className="flex items-center gap-x-2 text-lg font-semibold">
                 <Settings className="w-5 h-5" />
