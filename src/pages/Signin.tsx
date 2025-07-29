@@ -127,11 +127,9 @@ function Signin() {
                 </button>
               </div>
               <div className="mt-4 text-center text-sm">
-                登録は
-                <Link className="underline" to={'/signup'}>
-                  こちら
+                <Link className="underline text-blue-600 hover:text-blue-800" to={'/signup'}>
+                  登録はこちら
                 </Link>
-                から
               </div>
             </form>
           </div>

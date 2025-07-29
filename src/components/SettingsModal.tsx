@@ -13,9 +13,10 @@ import { useSettings } from '@/modules/settings/settings.state.tsx';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLogout?: () => Promise<void>;
 }
 
-export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('general');
   const [isUpdatingName, setIsUpdatingName] = useState(false);
@@ -132,6 +133,36 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
               </div>
             </div>
+            
+            {/* ログアウトセクション */}
+            {onLogout && (
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
+                  {t('auth.session', 'セッション')}
+                </h3>
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-neutral-900 dark:text-white">
+                        {t('auth.logout', 'ログアウト')}
+                      </p>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-300">
+                        {t('auth.logout.description', 'アカウントからログアウトします')}
+                      </p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        await onLogout();
+                        onClose();
+                      }}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors duration-150"
+                    >
+                      {t('auth.logout', 'ログアウト')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       case 'account':

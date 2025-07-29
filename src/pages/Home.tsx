@@ -266,32 +266,35 @@ export function Home() {
   }, [favoriteNoteIds, publicNotes]);
 
   return (
-    <Card className="border-0 shadow-none w-1/2 m-auto">
-      <CardHeader className="px-4 pb-3">
-        <CardTitle className="text-lg font-medium text-improved">
-          {t('home.description')}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-4">
-        {/* ノート作成フォーム */}
-        <div className="flex gap-2 mb-4">
-          <input
-            className="input-white-bg h-9 flex-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
-            placeholder={t('home.placeholder.title')}
-            type="text"
-            onChange={(e) => setTitle(e.target.value)}
-            value={title}
-            onKeyDown={(e) => e.key === 'Enter' && createNote()}
-          />
-          <button
-            className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={createNote}
-            disabled={!title.trim()}
-          >
-            <Plus className="h-4 w-4" />
-            <span className="ml-1">{t('home.createNote')}</span>
-          </button>
-        </div>
+    <div className="min-h-screen pb-20 pt-4 md:pb-40 md:pt-20">
+      <div className="w-full max-w-full md:max-w-4xl lg:max-w-6xl mx-auto px-3 md:px-4 lg:px-6">
+        <Card className="border-0 shadow-none">
+          <CardHeader className="px-3 md:px-4 pb-3">
+            <CardTitle className="text-lg md:text-xl font-medium text-improved">
+              {t('home.description')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-3 md:px-4">
+            {/* ノート作成フォーム */}
+            <div className="flex flex-col sm:flex-row gap-2 mb-4 md:mb-6">
+              <input
+                className="input-white-bg h-9 flex-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 text-sm md:text-base"
+                placeholder={t('home.placeholder.title')}
+                type="text"
+                onChange={(e) => setTitle(e.target.value)}
+                value={title}
+                onKeyDown={(e) => e.key === 'Enter' && createNote()}
+              />
+              <button
+                className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                onClick={createNote}
+                disabled={!title.trim()}
+              >
+                <Plus className="h-4 w-4" />
+                <span className="ml-1 hidden sm:inline">{t('home.createNote')}</span>
+                <span className="ml-1 sm:hidden">作成</span>
+              </button>
+            </div>
 
         {/* ノート一覧の表示 */}
         <div className="space-y-8">
@@ -520,5 +523,7 @@ export function Home() {
         </div>
       </CardContent>
     </Card>
+      </div>
+    </div>
   );
 }

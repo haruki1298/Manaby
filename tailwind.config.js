@@ -5,6 +5,20 @@ export default {
   plugins: [react(), require('tailwindcss-animate')],
   theme: {
   	extend: {
+  		screens: {
+  			'xs': '475px',
+  			'sm': '640px',
+  			'md': '768px',
+  			'lg': '1024px',
+  			'xl': '1280px',
+  			'2xl': '1536px',
+  		},
+  		spacing: {
+  			'safe-top': 'env(safe-area-inset-top)',
+  			'safe-bottom': 'env(safe-area-inset-bottom)',
+  			'safe-left': 'env(safe-area-inset-left)',
+  			'safe-right': 'env(safe-area-inset-right)',
+  		},
   		colors: {
   			popover: {
   				DEFAULT: 'hsl(var(--popover))',
@@ -51,6 +65,15 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		animation: {
+  			'logo-fade': 'fadeIn 1s ease-in-out'
+  		},
+  		keyframes: {
+  			fadeIn: {
+  				'0%': { opacity: '0', transform: 'translateY(-10px)' },
+  				'100%': { opacity: '1', transform: 'translateY(0)' }
+  			}
   		}
   	}
   },

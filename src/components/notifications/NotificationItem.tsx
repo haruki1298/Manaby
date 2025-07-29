@@ -1,5 +1,4 @@
 // src/components/notifications/NotificationItem.tsx
-import React from 'react';
 import type { NotificationType } from '@/types/notification'; // パスを確認
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare, FileText } from 'lucide-react';

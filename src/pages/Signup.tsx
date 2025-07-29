@@ -1,7 +1,7 @@
 import { authRepository } from "@/modules/auth/auath.repository";
 import { useCurrentUserStore } from "@/modules/auth/current-user.state";
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, Link } from "react-router-dom";
 
 function Signup() {
   const [name, setName] = useState('');
@@ -94,7 +94,10 @@ function Signup() {
     // JSXの部分は変更なし
     <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center">
-        <h2 className="text-3xl font-extrabold text-gray-900">
+        <h2
+          className="text-5xl font-extrabold bg-gradient-to-r from-blue-500 via-pink-500 to-yellow-500 bg-clip-text text-transparent drop-shadow-lg animate-logo-fade"
+          style={{ fontFamily: "'Lobster', cursive" }}
+        >
           Manaby
         </h2>
         <div className="mt-8 w-full max-w-md">
@@ -182,6 +185,11 @@ function Signup() {
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 disabled:opacity-50 disabled:cursor-not-allowed">
                   登録
                 </button>
+              </div>
+              <div className="mt-4 text-center text-sm">
+                <Link className="underline text-blue-600 hover:text-blue-800" to={'/signin'}>
+                  ログインはこちら
+                </Link>
               </div>
             </form>
           </div>

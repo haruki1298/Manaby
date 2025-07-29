@@ -2,7 +2,7 @@ import { FC, useState, useRef, useCallback, useEffect } from 'react';
 import { Item } from './Item';
 import { NoteList } from '../NoteList';
 import UserItem from './UserItem';
-import { Plus, Search, Settings } from 'lucide-react';
+import { Plus, Search, Settings, LogOut } from 'lucide-react';
 import { useCurrentUserStore } from '@/modules/auth/current-user.state';
 import { useNoteStore } from '@/modules/notes/note.state';
 import { noteRepository } from '@/modules/notes/note.repository';
@@ -22,11 +22,23 @@ const SideBar: FC<Props> = ({ onSearchButtonClicked, onWidthChange }) => {
   const currentUserStore = useCurrentUserStore();
   const noteStore = useNoteStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   // リサイズ機能の状態
   const [sidebarWidth, setSidebarWidth] = useState(240); // デフォルト幅
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // モバイル検知
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   // リサイズ処理
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -129,6 +141,14 @@ const SideBar: FC<Props> = ({ onSearchButtonClicked, onWidthChange }) => {
               icon={Settings} 
               onClick={openSettings}
             />
+            {/* モバイル時のログアウトボタン */}
+            {isMobile && (
+              <Item 
+                label={t('auth.logout', 'ログアウト')} 
+                icon={LogOut} 
+                onClick={signout}
+              />
+            )}
           </div>
           
           <div className="flex-1 p-3">
@@ -169,6 +189,7 @@ const SideBar: FC<Props> = ({ onSearchButtonClicked, onWidthChange }) => {
       <SettingsModal 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
+        onLogout={signout}
       />
     </>
   );

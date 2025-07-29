@@ -22,11 +22,27 @@ const Layout = () => {
   const [isShowModel, setIsShowModel] = useState(false);
   const [searchResult, setSearchResult] = useState<Note[]>([]);
   const [sidebarWidth, setSidebarWidth] = useState(240);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // ▼▼▼ 通知フックの呼び出しとドロップダウンの状態管理 ▼▼▼
   const { unreadCount } = useNotifications();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   // ▲▲▲ ここまで ▲▲▲
+
+  // レスポンシブ検知
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsSidebarOpen(false); // デスクトップでは自動でサイドバーを閉じる
+      }
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   useEffect(() => {
     // currentUser が確定してからノートを取得・購読する
@@ -95,43 +111,105 @@ const Layout = () => {
 
   return (
     <div className="h-full flex bg-neutral-50 dark:bg-neutral-900">
-      {/* ★ ここは元のコードのまま */}
-      {!isLoading && (
-        <SideBar
-          onSearchButtonClicked={() => setIsShowModel(true)}
-          onWidthChange={handleSidebarWidthChange}
-        />
-      )}
-      {/* ▼▼▼ main タグに relative を追加 ▼▼▼ */}
-      <main
-        className="h-full overflow-y-auto bg-white dark:bg-neutral-900 transition-all duration-150 relative"
-        style={{
-          marginLeft: `${sidebarWidth}px`,
-          width: `calc(100% - ${sidebarWidth}px)`
-        }}
-      >
-        {/* ▼▼▼ 通知ベルUIの配置 ▼▼▼ */}
-        <div className="absolute top-4 right-6 z-50">
+      {/* モバイル用ハンバーガーメニュー */}
+      {isMobile && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 p-3 flex items-center justify-between">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Manaby</h1>
+          
+          {/* モバイル通知ベル */}
           <div className="relative">
             <button
               onClick={() => setIsNotificationOpen(prev => !prev)}
               className="relative p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               aria-label="通知"
             >
-              <Bell size={22} />
+              <Bell size={20} />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 block h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold">
+                <span className="absolute top-0 right-0 block h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </button>
-            {/* isNotificationOpenがtrueならドロップダウンを表示 */}
             {isNotificationOpen && <NotificationDropdown onClose={() => setIsNotificationOpen(false)} />}
           </div>
         </div>
-        {/* ▲▲▲ 通知ベルUIここまで ▲▲▲ */}
+      )}
 
-        <div className="max-w-4xl mx-auto">
+      {/* サイドバー - モバイルではオーバーレイ、デスクトップでは固定 */}
+      {!isLoading && (
+        <div className={`
+          ${isMobile 
+            ? `fixed inset-0 z-40 ${isSidebarOpen ? 'block' : 'hidden'}` 
+            : 'block'
+          }
+        `}>
+          {/* モバイルオーバーレイ背景 */}
+          {isMobile && isSidebarOpen && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
+          
+          <div className={`
+            ${isMobile 
+              ? 'fixed left-0 top-0 h-full w-64 z-50' 
+              : 'relative'
+            }
+          `}>
+            <SideBar
+              onSearchButtonClicked={() => {
+                setIsShowModel(true);
+                if (isMobile) setIsSidebarOpen(false);
+              }}
+              onWidthChange={handleSidebarWidthChange}
+            />
+          </div>
+        </div>
+      )}
+      
+      {/* メインコンテンツ */}
+      <main
+        className={`
+          h-full overflow-y-auto bg-white dark:bg-neutral-900 transition-all duration-150 relative
+          ${isMobile ? 'pt-16' : ''}
+        `}
+        style={{
+          marginLeft: !isMobile ? `${sidebarWidth}px` : '0',
+          width: !isMobile ? `calc(100% - ${sidebarWidth}px)` : '100%'
+        }}
+      >
+        {/* デスクトップ通知ベル */}
+        {!isMobile && (
+          <div className="absolute top-4 right-6 z-50">
+            <div className="relative">
+              <button
+                onClick={() => setIsNotificationOpen(prev => !prev)}
+                className="relative p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                aria-label="通知"
+              >
+                <Bell size={22} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 block h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              {isNotificationOpen && <NotificationDropdown onClose={() => setIsNotificationOpen(false)} />}
+            </div>
+          </div>
+        )}
+
+        <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8">
           <Outlet />
         </div>
         

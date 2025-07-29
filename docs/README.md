@@ -1,4 +1,4 @@
-# Notion Clone - 国際化対応とUI/UX改善
+# Manaby - 国際化対応とUI/UX改善
 
 ## プロジェクト概要
 
@@ -269,4 +269,4 @@ interface SettingsState {
 
 ---
 
-*このドキュメントは、Notion Clone アプリケーションの国際化対応とUI/UX改善実装についての技術仕様書です。*
+*このドキュメントは、Manaby アプリケーションの国際化対応とUI/UX改善実装についての技術仕様書です。*

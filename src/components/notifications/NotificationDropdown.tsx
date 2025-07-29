@@ -1,5 +1,4 @@
 // src/components/notifications/NotificationDropdown.tsx
-import React from 'react';
 import { useNotifications } from '@/hooks/useNotifications'; // 作成済みのフック
 import { NotificationItem } from './NotificationItem';
 

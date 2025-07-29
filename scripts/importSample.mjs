@@ -31,7 +31,7 @@ async function importSampleNotes() {
 
   const sampleNotes = [
     {
-      title: 'Welcome to Notion Clone',
+      title: 'Welcome to Manaby',
       content: JSON.stringify([
         {
           id: "1",

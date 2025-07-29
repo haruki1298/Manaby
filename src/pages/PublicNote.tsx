@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { noteRepository } from "@/modules/notes/note.repository";
 import Editor from "@/components/Editor";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import type { Database } from '../../database.types';
 import type { CommentType, UserProfile } from '@/types/comment';
 import { useCurrentUserStore } from '@/modules/auth/current-user.state';
+import { ArrowLeft } from 'lucide-react';
 
 // 型エイリアス
 type NoteRow = Database['public']['Tables']['notes']['Row'];
@@ -20,9 +21,11 @@ interface NoteWithCreator extends NoteRow {}
 
 const PublicNote = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const params = useParams();
   const noteIdFromParams = parseInt(params.id!);
   const [note, setNote] = useState<NoteWithCreator | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const [comments, setComments] = useState<CommentType[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
@@ -30,6 +33,43 @@ const PublicNote = () => {
   const { currentUser } = useCurrentUserStore();
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [editingComment, setEditingComment] = useState<CommentType | null>(null);
+
+  // レスポンシブ検知
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
+  // 動的スペーシングを計算する関数（レスポンシブ対応）
+  const calculateSpacing = useCallback((commentsCount: number) => {
+    const baseSpacing = {
+      mobile: 'space-y-3',
+      tablet: 'space-y-4', 
+      desktop: 'space-y-6'
+    };
+
+    const denseSpacing = {
+      mobile: 'space-y-2',
+      tablet: 'space-y-3',
+      desktop: 'space-y-4'
+    };
+
+    const spaciousSpacing = {
+      mobile: 'space-y-4',
+      tablet: 'space-y-6',
+      desktop: 'space-y-8'
+    };
+
+    if (commentsCount === 0) return `${baseSpacing.mobile} md:${baseSpacing.tablet} lg:${baseSpacing.desktop}`;
+    if (commentsCount <= 3) return `${spaciousSpacing.mobile} md:${spaciousSpacing.tablet} lg:${spaciousSpacing.desktop}`;
+    if (commentsCount <= 10) return `${baseSpacing.mobile} md:${baseSpacing.tablet} lg:${baseSpacing.desktop}`;
+    return `${denseSpacing.mobile} md:${denseSpacing.tablet} lg:${denseSpacing.desktop}`; // 多すぎる場合は詰める
+  }, []);
 
   const buildCommentTree = useCallback((flatComments: CommentRow[]): CommentType[] => {
     const commentMap: { [id: string]: CommentType } = {};
@@ -178,45 +218,65 @@ const PublicNote = () => {
   if (!note) return <div>{t('notes.loading', 'ノートを読み込み中...')}</div>;
 
   return (
-    <div className="pb-40 pt-20 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-      <div className="md:max-w-3xl lg:max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-4">{note.title ?? t('notes.untitled', '無題')}</h1>
-        <div className="mb-4 text-gray-600 dark:text-gray-400 text-sm">
+    <div className="min-h-screen pb-20 pt-4 md:pb-40 md:pt-20 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+      <div className="w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto px-3 md:px-4 lg:px-6">
+        {/* モバイル用戻るボタン */}
+        {isMobile && (
+          <div className="mb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              aria-label="戻る"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm">戻る</span>
+            </button>
+          </div>
+        )}
+        
+        <h1 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4 break-words">{note.title ?? t('notes.untitled', '無題')}</h1>
+        <div className="mb-3 md:mb-4 text-gray-600 dark:text-gray-400 text-xs md:text-sm">
           {t('notes.creator', '作成者')}: {note.creator_name || t('common.unknown', '不明')} | {t('notes.createdDate', '作成日')}: {new Date(note.created_at).toLocaleDateString('ja-JP')}
         </div>
-        <Editor initialContent={note.content} onChange={() => {}} readOnly key={note.id} />
-        <div className="mt-4 text-gray-500 dark:text-gray-400 text-sm">{t('notes.readOnlyNote', '※このノートは閲覧専用です')}</div>
+        <div className="mb-4">
+          <Editor initialContent={note.content} onChange={() => {}} readOnly key={note.id} />
+        </div>
+        <div className="mt-3 md:mt-4 text-gray-500 dark:text-gray-400 text-xs md:text-sm">{t('notes.readOnlyNote', '※このノートは閲覧専用です')}</div>
 
-        <div className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8">
-          <h2 className="text-2xl font-semibold mb-6">
+        <div className={`mt-8 md:mt-12 border-t border-gray-200 dark:border-gray-700 pt-6 md:pt-8 ${calculateSpacing(comments.length)}`}>
+          <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">
             {editingComment ? t('comments.editingTitle', 'コメントを編集中') : t('comments.title', 'コメント')}
           </h2>
           {currentUser ? (
-            <CommentForm
-              onSubmit={handleCommentSubmit}
-              parentId={replyingToCommentId}
-              onCancelReply={replyingToCommentId ? handleCancelReply : undefined}
-              isSubmitting={isSubmittingComment}
-              isEditing={!!editingComment}
-              initialContent={editingComment ? editingComment.content : ''}
-              onCancelEdit={editingComment ? handleCancelEdit : undefined}
-            />
+            <div className="mb-6 md:mb-8">
+              <CommentForm
+                onSubmit={handleCommentSubmit}
+                parentId={replyingToCommentId}
+                onCancelReply={replyingToCommentId ? handleCancelReply : undefined}
+                isSubmitting={isSubmittingComment}
+                isEditing={!!editingComment}
+                initialContent={editingComment ? editingComment.content : ''}
+                onCancelEdit={editingComment ? handleCancelEdit : undefined}
+              />
+            </div>
           ) : (
-            <div className="p-4 mb-6 border rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-center">
+            <div className="p-3 md:p-4 mb-4 md:mb-6 border rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-center text-sm md:text-base">
               {t('comments.loginRequired', 'コメントを投稿するにはログインが必要です。')}
             </div>
           )}
           {isLoadingComments ? (
-            <p className="text-gray-500 dark:text-gray-400">{t('comments.loading', 'コメントを読み込み中...')}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base">{t('comments.loading', 'コメントを読み込み中...')}</p>
           ) : comments.length > 0 ? (
-            <CommentList
-              comments={comments}
-              onReply={handleReplyClick}
-              onEdit={handleEditComment}
-              onDelete={handleDeleteComment}
-            />
+            <div className={calculateSpacing(comments.length)}>
+              <CommentList
+                comments={comments}
+                onReply={handleReplyClick}
+                onEdit={handleEditComment}
+                onDelete={handleDeleteComment}
+              />
+            </div>
           ) : (
-            <p className="text-gray-500 dark:text-gray-400">{t('comments.noComments', 'まだコメントはありません。')}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base">{t('comments.noComments', 'まだコメントはありません。')}</p>
           )}
         </div>
       </div>

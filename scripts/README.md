@@ -2,7 +2,7 @@
 
 ## 📋 概要
 
-このスクリプトは、Notion CloneアプリのSupabaseデータベースにサンプルデータをインポートするためのNode.jsスクリプトです。
+このスクリプトは、ManabyアプリのSupabaseデータベースにサンプルデータをインポートするためのNode.jsスクリプトです。
 
 ## 🔧 セットアップ
 
@@ -41,7 +41,7 @@ npm run import-sample:clear
 ## 📊 インポートされるデータ
 
 ### Notes（ノート）
-- Welcome to Notion Clone（公開ノート）
+- Welcome to Manaby（公開ノート）
 - プロジェクト計画（非公開ノート）
 - 技術仕様書（公開ノート）
 
