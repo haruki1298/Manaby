@@ -95,7 +95,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                 {t('settings.general.title')}
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0">
                   <div>
                     <p className="font-medium text-neutral-900 dark:text-white">
                       {t('settings.autoSave')}
@@ -108,11 +108,11 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                     type="checkbox"
                     checked={settings.autoSave}
                     onChange={(e) => setAutoSave(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 self-start sm:self-auto"
                   />
                 </div>
-                <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0">
+                  <div className="flex-1">
                     <p className="font-medium text-neutral-900 dark:text-white">
                       {t('settings.defaultLanguage')}
                     </p>
@@ -125,7 +125,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                     onChange={(e) => {
                       setDefaultLanguage(e.target.value);
                     }}
-                    className="px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
+                    className="w-full sm:w-auto px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
                   >
                     <option value="ja">{t('language.ja')}</option>
                     <option value="en">{t('language.en')}</option>
@@ -141,8 +141,8 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                   {t('auth.session', 'セッション')}
                 </h3>
                 <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                    <div className="flex-1">
                       <p className="font-medium text-neutral-900 dark:text-white">
                         {t('auth.logout', 'ログアウト')}
                       </p>
@@ -155,7 +155,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                         await onLogout();
                         onClose();
                       }}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors duration-150"
+                      className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors duration-150"
                     >
                       {t('auth.logout', 'ログアウト')}
                     </button>
@@ -182,7 +182,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                         {t('settings.displayName')}
                       </label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="text"
                           value={tempDisplayName}
@@ -194,7 +194,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                         <button
                           onClick={handleDisplayNameSubmit}
                           disabled={isUpdatingName || !isDisplayNameChanged}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-white rounded-md transition-colors duration-150 font-medium"
+                          className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-white rounded-md transition-colors duration-150 font-medium"
                         >
                           {isUpdatingName ? t('common.loading') : t('common.save')}
                         </button>
@@ -227,7 +227,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                   <p className="font-medium text-neutral-900 dark:text-white mb-3">
                     {t('settings.theme')}
                   </p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div 
                       className={`flex flex-col items-center p-3 border-2 rounded-lg cursor-pointer transition-colors ${
                         settings.theme === 'light' 
@@ -292,8 +292,8 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                 {t('settings.privacy.title')}
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0">
+                  <div className="flex-1">
                     <p className="font-medium text-neutral-900 dark:text-white">
                       {t('settings.defaultNoteVisibility')}
                     </p>
@@ -304,7 +304,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                   <select 
                     value={settings.defaultNoteVisibility}
                     onChange={(e) => setDefaultNoteVisibility(e.target.value as 'private' | 'public')}
-                    className="px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
+                    className="w-full sm:w-auto px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
                   >
                     <option value="private">{t('settings.visibility.private')}</option>
                     <option value="public">{t('settings.visibility.public')}</option>
@@ -317,14 +317,14 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                   <p className="text-sm text-red-700 dark:text-red-300 mb-3">
                     {t('settings.dangerZone.description')}
                   </p>
-                  <div className="space-y-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <button 
                       onClick={async () => {
                         if (confirm(t('settings.resetConfirm'))) {
                           await resetSettings();
                         }
                       }}
-                      className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-medium transition-colors duration-150 mr-2"
+                      className="w-full sm:w-auto px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-medium transition-colors duration-150"
                     >
                       {t('settings.resetSettings')}
                     </button>
@@ -334,7 +334,7 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                           alert(t('settings.deleteNotImplemented'));
                         }
                       }}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors duration-150"
+                      className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors duration-150"
                     >
                       {t('settings.deleteAllData')}
                     </button>
@@ -351,11 +351,11 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh] p-0">
-        <div className="flex h-full">
-          {/* サイドバー */}
-          <div className="w-64 bg-neutral-50 dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700">
-            <DialogHeader className="p-6 border-b border-neutral-200 dark:border-neutral-700">
+      <DialogContent className="max-w-4xl h-[80vh] md:h-[80vh] w-[95vw] md:w-full p-0">
+        <div className="flex flex-col md:flex-row h-full">
+          {/* サイドバー - モバイルでは上部、デスクトップでは左側 */}
+          <div className="w-full md:w-64 bg-neutral-50 dark:bg-neutral-800 border-b md:border-b-0 md:border-r border-neutral-200 dark:border-neutral-700">
+            <DialogHeader className="p-4 md:p-6 border-b border-neutral-200 dark:border-neutral-700">
               <DialogTitle className="flex items-center gap-x-2 text-lg font-semibold">
                 <Settings className="w-5 h-5" />
                 {t('settings.title')}
@@ -364,30 +364,33 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                 {t('settings.description')}
               </DialogDescription>
             </DialogHeader>
-            <nav className="p-4 space-y-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`
-                    w-full flex items-center gap-x-3 px-3 py-2 text-left rounded-lg transition-colors duration-150
-                    ${
-                      activeTab === tab.id
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
-                    }
-                  `}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
+            <nav className="p-2 md:p-4">
+              {/* モバイル: 横スクロール可能なタブ, デスクトップ: 縦並び */}
+              <div className="flex md:flex-col space-x-1 md:space-x-0 md:space-y-1 overflow-x-auto md:overflow-x-visible">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex-shrink-0 md:flex-shrink flex items-center gap-x-2 md:gap-x-3 px-3 py-2 text-left rounded-lg transition-colors duration-150 whitespace-nowrap md:w-full
+                      ${
+                        activeTab === tab.id
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                          : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                      }
+                    `}
+                  >
+                    <tab.icon className="w-4 h-4" />
+                    <span className="text-sm md:text-base">{tab.label}</span>
+                  </button>
+                ))}
+              </div>
             </nav>
           </div>
 
           {/* メインコンテンツ */}
           <div className="flex-1 overflow-y-auto">
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               {renderTabContent()}
             </div>
           </div>

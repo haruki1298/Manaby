@@ -158,7 +158,7 @@ const NoteDetail = () => {
   if(note == null) return <div>note is not existed</div>;
   console.log(note);
   return (
-    <div className="min-h-screen pb-20 pt-4 md:pb-40 md:pt-20">
+    <div className="min-h-screen pb-20 pt-4 md:pb-40 md:pt-20 overflow-x-hidden">
       <div className="w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto px-3 md:px-4 lg:px-6">
         {/* ヘッダー部分 */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 md:mb-4 gap-2">
@@ -183,7 +183,7 @@ const NoteDetail = () => {
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-4 w-full overflow-hidden">
           <TitleInput 
             initialData={note} 
             onTitleChange={canEdit ? (title) => updataNote(id, { title }) : () => {}}
@@ -191,7 +191,7 @@ const NoteDetail = () => {
           />
         </div>
         
-        <div className="mb-4">
+        <div className="mb-4 w-full overflow-hidden">
           <Editor 
             initialContent={note.content}
             onChange={canEdit ? (content) => updataNote(id, { content }) : () => {}}

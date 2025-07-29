@@ -21,11 +21,11 @@ export function TitleInput({ initialData, onTitleChange, readOnly = false, title
   };
   
   return (
-    <div className="pl-[54px] group relative">
+    <div className="pl-4 sm:pl-[54px] group relative w-full">
       <TextAreaAutoSize
-        className={`title-input text-5xl bg-transparent font-bold break-words outline-none
-        resize-none ${readOnly ? 'cursor-default' : ''}`}
-        style={{ color: titleColor }} // カスタム色を適用
+        className={`title-input text-2xl sm:text-3xl md:text-4xl lg:text-5xl bg-transparent font-bold break-words outline-none
+        resize-none w-full ${readOnly ? 'cursor-default' : ''}`}
+        style={{ color: titleColor, wordWrap: 'break-word', overflowWrap: 'break-word' }}
         value={value}
         onChange={(e) => handleTnputChange(e.target.value)}
         readOnly={readOnly}
