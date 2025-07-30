@@ -157,8 +157,14 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                     </div>
                     <button
                       onClick={async () => {
-                        await onLogout();
-                        onClose();
+                        try {
+                          await onLogout();
+                        } catch (error) {
+                          console.error('Logout error (ignored):', error);
+                          // ログアウトエラーは無視してモーダルを閉じる
+                        } finally {
+                          onClose();
+                        }
                       }}
                       className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors duration-150"
                     >

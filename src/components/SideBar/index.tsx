@@ -106,9 +106,16 @@ const SideBar: FC<Props> = ({ onSearchButtonClicked, onWidthChange }) => {
   };
 
   const signout = async () => {
-    await authRepository.signout();
-    currentUserStore.set(undefined);
-    noteStore.clear();
+    try {
+      await authRepository.signout();
+    } catch (error) {
+      console.error('Logout error (ignored):', error);
+      // ログアウトエラーは無視して、ローカル状態をクリア
+    } finally {
+      // どのような状況でもローカル状態をクリアしてログアウト扱いにする
+      currentUserStore.set(undefined);
+      noteStore.clear();
+    }
   };
 
   const openSettings = () => {

@@ -37,9 +37,28 @@ export const authRepository = {
       },
 
       async signout() {
-        const { error } = await supabase.auth.signOut();
-        if (error != null) throw new Error(error.message);
-        return true;
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error != null) {
+            // "Auth session missing"の場合は既にログアウト済みとして正常終了
+            if (error.message.includes('Auth session missing') || error.message.includes('JWT expired')) {
+              console.log('Session already expired, logout successful');
+              return true;
+            }
+            throw new Error(error.message);
+          }
+          return true;
+        } catch (error) {
+          // セッション関連のエラーは無視してログアウト成功として扱う
+          if (error instanceof Error && 
+              (error.message.includes('Auth session missing') || 
+               error.message.includes('JWT expired') ||
+               error.message.includes('session not found'))) {
+            console.log('Session error during logout, treating as successful:', error.message);
+            return true;
+          }
+          throw error;
+        }
       },
 
       async updateUserDisplayName(displayName: string) {
