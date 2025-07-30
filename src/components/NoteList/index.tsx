@@ -8,7 +8,6 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useSettings } from '@/modules/settings/settings.state.tsx';
 
 interface NoteListProps {
   layer?: number;
@@ -23,7 +22,6 @@ export function NoteList({ layer = 0, parentId }: NoteListProps) {
   const noteStore = useNoteStore()
   const notes = noteStore.getAll();
   const { currentUser } = useCurrentUserStore();
-  const { settings } = useSettings();
   const [expanded, setExpanded] = useState<Map<number, boolean>>(new Map());
 
   // フィルタリング機能
@@ -31,68 +29,14 @@ export function NoteList({ layer = 0, parentId }: NoteListProps) {
     // 親ノードでフィルタリング
     if (note.parent_document !== parentId) return false;
     
-    // 特定ユーザ表示設定が有効な場合のフィルタリング
-    if (settings.showOnlySpecificUser && settings.specificUserName) {
-      if (note.creator_name !== settings.specificUserName) return false;
-    }
-    
-    // お気に入りのみ表示設定が有効な場合のフィルタリング
-    if (settings.showOnlyFavorites) {
-      if (!note.is_favorite) return false;
-    }
-    
-    // 公開ノートを非表示設定が有効な場合のフィルタリング
-    if (settings.hidePublicNotes) {
-      if (note.is_public) return false;
-    }
-    
-    // 公開ノートのみ表示設定が有効な場合のフィルタリング
-    if (settings.showPublicNotesOnly) {
-      if (!note.is_public) return false;
-    }
-    
-    // 最近のノートのみ表示設定が有効な場合のフィルタリング
-    if (settings.showOnlyRecentNotes) {
-      const noteDate = new Date(note.updated_at || note.created_at);
-      const now = new Date();
-      const diffTime = Math.abs(now.getTime() - noteDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays > settings.recentDaysLimit) return false;
-    }
-    
     return true;
   });
 
   const getNoNotesMessage = () => {
-    if (settings.showOnlySpecificUser && settings.specificUserName) {
-      return t('notes.noNotesForUser', '指定されたユーザのノートがありません');
-    }
-    if (settings.showOnlyFavorites) {
-      return t('notes.noFavoriteNotes', 'お気に入りのノートがありません');
-    }
-    if (settings.showPublicNotesOnly) {
-      return t('notes.noPublicNotes', '公開ノートがありません');
-    }
-    if (settings.showOnlyRecentNotes) {
-      return t('notes.noRecentNotes', '最近のノートがありません');
-    }
     return t('notes.noNotes');
   };
 
   const getNoNotesDescription = () => {
-    if (settings.showOnlySpecificUser && settings.specificUserName) {
-      return t('notes.noNotesForUserDescription', `"${settings.specificUserName}"のノートが見つかりません`);
-    }
-    if (settings.showOnlyFavorites) {
-      return t('notes.noFavoriteNotesDescription', 'ノートをお気に入りに追加してください');
-    }
-    if (settings.showPublicNotesOnly) {
-      return t('notes.noPublicNotesDescription', '公開されたノートがありません');
-    }
-    if (settings.showOnlyRecentNotes) {
-      return t('notes.noRecentNotesDescription', `${settings.recentDaysLimit}日以内に作成・更新されたノートがありません`);
-    }
     return t('notes.noNotesDescription');
   };
 

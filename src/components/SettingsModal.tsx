@@ -5,7 +5,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Settings, User, Moon, Sun, Palette, Filter } from 'lucide-react';
+import { Settings, User, Moon, Sun, Palette } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/modules/settings/settings.state.tsx';
@@ -30,13 +30,6 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
     setTheme,
     setFontSize,
     setDisplayName,
-    setShowOnlySpecificUser,
-    setSpecificUserName,
-    setShowOnlyFavorites,
-    setHidePublicNotes,
-    setShowPublicNotesOnly,
-    setShowOnlyRecentNotes,
-    setRecentDaysLimit,
   } = useSettings();
 
   // 設定が変更されたときにtempDisplayNameを同期
@@ -87,7 +80,6 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
     { id: 'general', label: t('settings.general'), icon: Settings },
     { id: 'account', label: t('settings.account'), icon: User },
     { id: 'appearance', label: t('settings.appearance'), icon: Palette },
-    { id: 'filter', label: t('settings.filter', 'フィルター'), icon: Filter },
   ];
 
   const renderTabContent = () => {
@@ -291,148 +283,6 @@ export function SettingsModal({ isOpen, onClose, onLogout }: SettingsModalProps)
                     <span>{t('settings.fontSize.large')}</span>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        );
-      case 'filter':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
-                {t('settings.filter.title', 'フィルター設定')}
-              </h3>
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0 border border-neutral-200 dark:border-neutral-700">
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-white">
-                      {t('settings.showOnlySpecificUser', '特定ユーザのみ表示')}
-                    </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                      {t('settings.showOnlySpecificUser.description', '指定したユーザ名のノートのみを表示します')}
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.showOnlySpecificUser}
-                    onChange={(e) => setShowOnlySpecificUser(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 self-start sm:self-auto"
-                  />
-                </div>
-                {settings.showOnlySpecificUser && (
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0 border border-neutral-200 dark:border-neutral-700">
-                    <div className="flex-1">
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        {t('settings.specificUserName', 'ユーザ名')}
-                      </p>
-                      <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                        {t('settings.specificUserName.description', '表示したいユーザ名を入力してください')}
-                      </p>
-                    </div>
-                    <input
-                      type="text"
-                      value={settings.specificUserName}
-                      onChange={(e) => setSpecificUserName(e.target.value)}
-                      placeholder={t('settings.specificUserName.placeholder', 'ユーザ名を入力')}
-                      className="w-full sm:w-auto px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
-                    />
-                  </div>
-                )}
-                
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0 border border-neutral-200 dark:border-neutral-700">
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-white">
-                      {t('settings.showOnlyFavorites', 'お気に入りのみ表示')}
-                    </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                      {t('settings.showOnlyFavorites.description', 'お気に入りに登録されたノートのみを表示します')}
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.showOnlyFavorites}
-                    onChange={(e) => setShowOnlyFavorites(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 self-start sm:self-auto"
-                  />
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0 border border-neutral-200 dark:border-neutral-700">
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-white">
-                      {t('settings.hidePublicNotes', '公開ノートを非表示')}
-                    </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                      {t('settings.hidePublicNotes.description', '公開されているノートを非表示にします')}
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.hidePublicNotes}
-                    onChange={(e) => setHidePublicNotes(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 self-start sm:self-auto"
-                  />
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0 border border-neutral-200 dark:border-neutral-700">
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-white">
-                      {t('settings.showPublicNotesOnly', '公開ノートのみ表示')}
-                    </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                      {t('settings.showPublicNotesOnly.description', '公開されているノートのみを表示します')}
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.showPublicNotesOnly || false}
-                    onChange={(e) => setShowPublicNotesOnly(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 self-start sm:self-auto"
-                  />
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0 border border-neutral-200 dark:border-neutral-700">
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-white">
-                      {t('settings.showOnlyRecentNotes', '最近のノートのみ表示')}
-                    </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                      {t('settings.showOnlyRecentNotes.description', '指定した日数以内に作成・更新されたノートのみを表示します')}
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings.showOnlyRecentNotes}
-                    onChange={(e) => setShowOnlyRecentNotes(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 self-start sm:self-auto"
-                  />
-                </div>
-
-                {settings.showOnlyRecentNotes && (
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white dark:bg-neutral-800 rounded-lg space-y-3 sm:space-y-0 border border-neutral-200 dark:border-neutral-700">
-                    <div className="flex-1">
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        {t('settings.recentDaysLimit', '日数制限')}: {settings.recentDaysLimit}日
-                      </p>
-                      <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                        {t('settings.recentDaysLimit.description', '何日以内のノートを表示するかを設定してください')}
-                      </p>
-                    </div>
-                    <div className="w-full sm:w-auto">
-                      <input
-                        type="range"
-                        min="1"
-                        max="30"
-                        value={settings.recentDaysLimit}
-                        onChange={(e) => setRecentDaysLimit(Number(e.target.value))}
-                        className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
-                      />
-                      <div className="flex justify-between text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                        <span>1日</span>
-                        <span>30日</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
