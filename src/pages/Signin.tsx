@@ -11,13 +11,14 @@ function Signin() {
   const currentUserStore = useCurrentUserStore();
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
       setEmailError("メールアドレスを入力してください");
       return false;
     }
-    if (!emailRegex.test(email)) {
-      setEmailError("有効なメールアドレスを入力してください");
+    // @oic-ok.ac.jp のみ許可
+    const oicOkRegex = /^[^\s@]+@oic-ok\.ac\.jp$/;
+    if (!oicOkRegex.test(email)) {
+      setEmailError("@oic-ok.ac.jp ドメインのメールアドレスのみ利用できます");
       return false;
     }
     setEmailError("");
@@ -43,7 +44,10 @@ function Signin() {
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
 
-    if (!isEmailValid || !isPasswordValid) return;
+    if (!isEmailValid || !isPasswordValid) {
+      // どれか一つでもバリデーションNGならログイン処理を中断
+      return;
+    }
 
     try {
       const user = await authRepository.signin(email, password);

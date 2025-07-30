@@ -60,7 +60,10 @@ function Signup() {
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
 
-    if (!isNameValid || !isEmailValid || !isPasswordValid) return;
+    if (!isNameValid || !isEmailValid || !isPasswordValid) {
+      // どれか一つでもバリデーションNGならサインアップ処理を中断
+      return;
+    }
 
     try {
       // 1. signup処理からuserオブジェクトを受け取る
