@@ -14,6 +14,13 @@ interface SettingsState {
   defaultNoteVisibility: 'private' | 'public';
   displayName: string;
   showCategoryManager: boolean;
+  showOnlySpecificUser: boolean;
+  specificUserName: string;
+  showOnlyFavorites: boolean;
+  hidePublicNotes: boolean;
+  showPublicNotesOnly: boolean;
+  showOnlyRecentNotes: boolean;
+  recentDaysLimit: number;
 }
 
 const defaultSettings: SettingsState = {
@@ -24,6 +31,13 @@ const defaultSettings: SettingsState = {
   defaultNoteVisibility: 'private',
   displayName: '',
   showCategoryManager: false,
+  showOnlySpecificUser: false,
+  specificUserName: '',
+  showOnlyFavorites: false,
+  hidePublicNotes: false,
+  showPublicNotesOnly: false,
+  showOnlyRecentNotes: false,
+  recentDaysLimit: 7,
 };
 
 interface SettingsContextType {
@@ -36,6 +50,13 @@ interface SettingsContextType {
   setDefaultNoteVisibility: (visibility: 'private' | 'public') => void;
   setDisplayName: (name: string) => Promise<void>;
   setShowCategoryManager: (show: boolean) => void;
+  setShowOnlySpecificUser: (enabled: boolean) => void;
+  setSpecificUserName: (name: string) => void;
+  setShowOnlyFavorites: (enabled: boolean) => void;
+  setHidePublicNotes: (enabled: boolean) => void;
+  setShowPublicNotesOnly: (enabled: boolean) => void;
+  setShowOnlyRecentNotes: (enabled: boolean) => void;
+  setRecentDaysLimit: (days: number) => void;
   resetSettings: () => Promise<void>;
 }
 
@@ -204,6 +225,34 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     updateSettings({ showCategoryManager: show });
   };
 
+  const setShowOnlySpecificUser = (enabled: boolean) => {
+    updateSettings({ showOnlySpecificUser: enabled });
+  };
+
+  const setSpecificUserName = (name: string) => {
+    updateSettings({ specificUserName: name });
+  };
+
+  const setShowOnlyFavorites = (enabled: boolean) => {
+    updateSettings({ showOnlyFavorites: enabled });
+  };
+
+  const setHidePublicNotes = (enabled: boolean) => {
+    updateSettings({ hidePublicNotes: enabled });
+  };
+
+  const setShowPublicNotesOnly = (enabled: boolean) => {
+    updateSettings({ showPublicNotesOnly: enabled });
+  };
+
+  const setShowOnlyRecentNotes = (enabled: boolean) => {
+    updateSettings({ showOnlyRecentNotes: enabled });
+  };
+
+  const setRecentDaysLimit = (days: number) => {
+    updateSettings({ recentDaysLimit: days });
+  };
+
   const resetSettings = async () => {
     setSettings(defaultSettings);
     // i18nもデフォルト言語にリセット
@@ -221,6 +270,13 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     setDefaultNoteVisibility,
     setDisplayName,
     setShowCategoryManager,
+    setShowOnlySpecificUser,
+    setSpecificUserName,
+    setShowOnlyFavorites,
+    setHidePublicNotes,
+    setShowPublicNotesOnly,
+    setShowOnlyRecentNotes,
+    setRecentDaysLimit,
     resetSettings,
   };
 

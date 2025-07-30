@@ -90,6 +90,7 @@ function Signin() {
                       emailError ? "border-red-500" : "border-gray-300"
                     } rounded-md shadow-sm focus:outline-none focus:ring--500 focus:border--500 sm:text-sm`}
                   />
+                  <p className="mt-1 text-xs text-yellow-600">※@oic-ok.ac.jp ドメインのメールアドレスのみ利用できます</p>
                   {emailError && <p className="mt-1 text-sm text-red-600">{emailError}</p>}
                 </div>
               </div>

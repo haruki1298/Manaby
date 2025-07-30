@@ -25,13 +25,14 @@ function Signup() {
   };
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
       setEmailError("メールアドレスを入力してください");
       return false;
     }
-    if (!emailRegex.test(email)) {
-      setEmailError("有効なメールアドレスを入力してください");
+    // @oic-ok.ac.jp のみ許可
+    const oicOkRegex = /^[^\s@]+@oic-ok\.ac\.jp$/;
+    if (!oicOkRegex.test(email)) {
+      setEmailError("@oic-ok.ac.jp ドメインのメールアドレスのみ登録できます");
       return false;
     }
     setEmailError("");
@@ -150,6 +151,7 @@ function Signup() {
                       emailError ? "border-red-500" : "border-gray-300"
                     } rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm`}
                   />
+                  <p className="mt-1 text-xs text-yellow-600">※@oic-ok.ac.jp ドメインのメールアドレスのみ登録できます</p>
                   {emailError && <p className="mt-1 text-sm text-red-600">{emailError}</p>}
                 </div>
               </div>
